@@ -1,6 +1,7 @@
 import type { DatabaseConnection } from './connection';
 import { DatabaseError } from '../utils/errors';
 
+/** Full domain object returned by queries — parentIds parsed from JSON. */
 export interface MemoryRecord {
   id: string;
   title: string;
@@ -14,6 +15,7 @@ export interface MemoryRecord {
   updatedAt: string;
 }
 
+/** Subset of memory fields used in list results (no summary or parentIds). */
 export interface MemoryListItem {
   id: string;
   title: string;
@@ -23,6 +25,7 @@ export interface MemoryListItem {
   supersededById: string | null;
 }
 
+/** Input shape for creating a new memory. All fields required. */
 export interface InsertMemoryInput {
   id: string;
   title: string;
@@ -36,6 +39,7 @@ export interface InsertMemoryInput {
   updatedAt: string;
 }
 
+/** Input shape for partial updates — only provided fields are written. */
 export interface UpdateMemoryInput {
   id: string;
   title?: string;
@@ -47,17 +51,20 @@ export interface UpdateMemoryInput {
   updatedAt: string;
 }
 
+/** Pagination and filtering options for list queries. */
 export interface ListMemoriesOptions {
   includeSuperseded?: boolean;
   limit: number;
   offset: number;
 }
 
+/** Lightweight reference (id + title) used for ancestry and supersession lookups. */
 export interface MemoryReference {
   id: string;
   title: string;
 }
 
+/** Raw SQLite row shape — parentIds is unparsed JSON text. Internal only. */
 interface MemoryRow {
   id: string;
   title: string;
@@ -71,6 +78,7 @@ interface MemoryRow {
   updatedAt: string;
 }
 
+/** Raw SQLite row shape for list queries. Internal only. */
 interface MemoryListRow {
   id: string;
   title: string;
