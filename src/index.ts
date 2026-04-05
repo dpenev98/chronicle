@@ -1,6 +1,14 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { Command } from 'commander';
+import { registerCreateCommand } from './commands/create';
+import { registerDeleteCommand } from './commands/delete';
+import { registerGetCommand } from './commands/get';
+import { registerHookCommand } from './commands/hook';
+import { registerListCommand } from './commands/list';
+import { createNodeCommandRuntime } from './commands/shared';
+import { registerSupersedeCommand } from './commands/supersede';
+import { registerUpdateCommand } from './commands/update';
 
 function readPackageVersion(): string {
   const packageJsonPath = resolve(__dirname, '..', 'package.json');
@@ -10,10 +18,22 @@ function readPackageVersion(): string {
 }
 
 export function createProgram(): Command {
-  return new Command()
+  const program = new Command()
     .name('chronicle')
     .description('Project-scoped local memory layer for coding agents.')
     .version(readPackageVersion());
+
+  const runtime = createNodeCommandRuntime();
+
+  registerCreateCommand(program, runtime);
+  registerUpdateCommand(program, runtime);
+  registerGetCommand(program, runtime);
+  registerListCommand(program, runtime);
+  registerDeleteCommand(program, runtime);
+  registerSupersedeCommand(program, runtime);
+  registerHookCommand(program, runtime);
+
+  return program;
 }
 
 export async function run(argv = process.argv): Promise<void> {
