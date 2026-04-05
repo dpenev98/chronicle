@@ -41,11 +41,12 @@ chronicle/
 ├── src/
 │   ├── index.ts              # CLI entrypoint (Commander setup + command registration)
 │   ├── commands/             # One file per command + shared.ts for runtime/helpers
+│   ├── templates/            # Skill, instruction, and hook template renderers for future init generation
 │   ├── db/                   # SQLite connection, schema, prepared-statement queries
 │   ├── config/               # .chronicle/config.json read/write/validation
 │   └── utils/                # tokens, validation, errors, paths
 ├── tests/
-│   ├── unit/                 # Unit tests (one per utility/db module)
+│   ├── unit/                 # Unit tests (utilities, DB modules, template renderers)
 │   └── commands/             # Command tests + helpers.ts (test runtime, repo seeding)
 ├── docs/specs/               # FR spec, implementation plan, STATUS, gap analysis
 └── docs/architecture.md      # Architectural patterns (evolving)
@@ -54,6 +55,8 @@ chronicle/
 **Key files to know:**
 - `src/commands/shared.ts` — `CommandRuntime` interface, context opening, output formatters, table rendering
 - `src/db/queries.ts` — All prepared statements and the `ChronicleQueries` type
+- `src/templates/shared.ts` — Template rendering primitives and agent-specific formatting boundary
+- `src/templates/skills/index.ts` — Canonical skill template manifest for both supported agents
 - `src/utils/errors.ts` — Error hierarchy (`ChronicleError` subclasses) and exit codes
 - `tests/commands/helpers.ts` — `createTestRuntime()`, `createInitializedRepo()`, `seedMemory()`
 
@@ -121,6 +124,13 @@ Use `openChronicleContext(runtime)` for DB access. Always close in `finally`. Fo
 Three data shapes — never leak across boundaries:
 - **`MemoryRow`** → **`MemoryRecord`** (camelCase domain) → **`GetJsonMemory`/`ListJsonMemory`** (snake_case CLI output)
 
+### Reusable Artifact Generation
+
+Agent integration artifacts are generated through typed renderers in `src/templates/`.
+
+- Keep agent-specific differences isolated at the template boundary.
+- Do not scatter skill text, instruction snippets, or hook JSON across unrelated modules.
+
 ### Graceful Hook Degradation
 
 `hook session-start` **always exits 0**. Errors become warnings in the output payload. Chronicle must never block agent startup.
@@ -133,6 +143,7 @@ Three data shapes — never leak across boundaries:
 - **Test infra** in `tests/commands/helpers.ts`: `createInitializedRepo()`, `seedMemory()`, `createTestRuntime()`.
 - **Temp dirs** cleaned in `afterEach` via the `repos` array pattern.
 - **Every new command** → `tests/commands/<name>.test.ts`. Every new utility → `tests/unit/<name>.test.ts`.
+- **Template renderers** should be validated in `tests/unit/templates.test.ts` or a neighboring focused unit test file.
 - Always run `npm run typecheck && npm test` before considering work complete.
 
 ---
@@ -145,6 +156,13 @@ Three data shapes — never leak across boundaries:
 2. Use `openChronicleContext(runtime)`, close in `finally`, return typed result.
 3. Register in `src/index.ts`.
 4. Add `tests/commands/<name>.test.ts`.
+
+### Adding or Updating a Template
+
+1. Add or update the renderer in `src/templates/skills/`, `src/templates/instructions/`, or `src/templates/hooks/`.
+2. Keep agent-specific formatting decisions inside the template layer, not in commands.
+3. If the template is part of the skill set, update `src/templates/skills/index.ts`.
+4. Add or update focused unit coverage in `tests/unit/templates.test.ts`.
 
 ### Adding a New Query
 

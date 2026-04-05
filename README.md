@@ -1,5 +1,7 @@
 # Chronicle
 
+> **Status**: This project is still in early stage development and is not yet ready for **any** use. Key features are not yet implemented. Refer to [implementation plan](./docs/specs/implementation-plan.md) for the planned features and [STATUS.md](./docs/specs/STATUS.md) for the current progress.
+
 Chronicle is a **project-scoped, local memory layer for coding agents**.
 
 It gives AI coding agents persistent memory across sessions by storing structured project knowledge inside the repository itself, using SQLite as the storage layer and a TypeScript CLI as the integration surface.
@@ -84,11 +86,12 @@ chronicle/
 ├── src/
 │   ├── index.ts          # Commander program setup + command registration
 │   ├── commands/         # One file per command + shared runtime helpers
+│   ├── templates/        # Skill, instruction, and hook template renderers for future init generation
 │   ├── db/               # SQLite connection, schema, prepared-statement queries
 │   ├── config/           # .chronicle/config.json read/write/validation
 │   └── utils/            # Tokens, validation, errors, path resolution
 ├── tests/
-│   ├── unit/             # Unit tests for foundational modules
+│   ├── unit/             # Unit tests for foundational modules and template renderers
 │   └── commands/         # Command execution tests + test helpers
 └── docs/
     ├── architecture.md   # Architectural patterns and design decisions

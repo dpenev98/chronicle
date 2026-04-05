@@ -322,7 +322,7 @@ All CLI commands follow a consistent error pattern:
 
 ## 7. Agent Integration — Hook Configuration
 
-[STATUS]: Not Started
+[STATUS]: In Progress
 
 ### Claude Code
 
@@ -371,7 +371,7 @@ The SessionStart hook is added to `.github/hooks/chronicle.json`:
 
 ## 8. Agent Integration — Skills
 
-[STATUS]: Not Started
+[STATUS]: Done
 
 Five SKILL.md files are generated per agent. They share identical content; only the directory differs (`.claude/skills/` vs `.github/skills/`).
 
@@ -422,7 +422,7 @@ For brownfield adoption — creating memories from existing project artifacts (F
 
 ## 9. Agent Integration — Custom Instructions
 
-[STATUS]: Not Started
+[STATUS]: Done
 
 Appended to `CLAUDE.md` and `.github/copilot-instructions.md` between marker comments:
 
@@ -606,21 +606,21 @@ chronicle/
 
 ### Epic 3: Agent Integration Templates & Init Scaffolding
 
-[STATUS]: Not Started
+[STATUS]: In Progress
 
 **Goal:** `chronicle init` produces all agent integration artifacts. Prompt engineering is done.
 
 | # | Task | FR | Acceptance | Status |
 |---|------|-----|------------|--------|
-| 3.1 | Write `/create-memory` SKILL.md template — **this is the most critical prompt**. Must produce high-quality descriptions and structured summaries. Includes `--stdin` usage instruction. | FR-9.4, FR-9.8, FR-2.4 | Manual test: give a sample conversation → agent produces a well-structured memory | Not Started |
-| 3.2 | Write `/create-memory-from` SKILL.md template — for brownfield adoption. Instructs agent to analyze provided files/text instead of conversation. Same quality standards. | FR-9.4, FR-2.10 | Manual test: point at an existing doc → agent produces a well-structured memory | Not Started |
-| 3.3 | Write `/update-memory` SKILL.md template | FR-9.4 | Clear step-by-step for loading, comparing, updating | Not Started |
-| 3.4 | Write `/list-memories` SKILL.md template | FR-9.4 | Runs `chronicle list --format table` | Not Started |
-| 3.5 | Write `/recall` SKILL.md template | FR-9.4 | Runs `chronicle get <id>`, presents content | Not Started |
-| 3.6 | Write custom instruction snippet for CLAUDE.md — includes coexistence note, budget rules, conflict handling, marker comments | FR-9.5, FR-9.9 | All FR-9.5 bullet points covered | Not Started |
-| 3.7 | Write custom instruction snippet for copilot-instructions.md — same content adapted for Copilot | FR-9.5, FR-9.9 | Same coverage | Not Started |
-| 3.8 | Write Claude Code hook config template | FR-9.2 | Valid `.claude/settings.json` hook format | Not Started |
-| 3.9 | Write Copilot hook config template (VS Code local agent mode) | FR-9.2 | Valid `.github/hooks/chronicle.json` format Schema validated against current Copilot docs. | Not Started |
+| 3.1 | Write `/create-memory` SKILL.md template — **this is the most critical prompt**. Must produce high-quality descriptions and structured summaries. Includes `--stdin` usage instruction. | FR-9.4, FR-9.8, FR-2.4 | Manual test: give a sample conversation → agent produces a well-structured memory | Done |
+| 3.2 | Write `/create-memory-from` SKILL.md template — for brownfield adoption. Instructs agent to analyze provided files/text instead of conversation. Same quality standards. | FR-9.4, FR-2.10 | Manual test: point at an existing doc → agent produces a well-structured memory | Done |
+| 3.3 | Write `/update-memory` SKILL.md template | FR-9.4 | Clear step-by-step for loading, comparing, updating | Done |
+| 3.4 | Write `/list-memories` SKILL.md template | FR-9.4 | Runs `chronicle list --format table` | Done |
+| 3.5 | Write `/recall` SKILL.md template | FR-9.4 | Runs `chronicle get <id>`, presents content | Done |
+| 3.6 | Write custom instruction snippet for CLAUDE.md — includes coexistence note, budget rules, conflict handling, marker comments | FR-9.5, FR-9.9 | All FR-9.5 bullet points covered | Done |
+| 3.7 | Write custom instruction snippet for copilot-instructions.md — same content adapted for Copilot | FR-9.5, FR-9.9 | Same coverage | Done |
+| 3.8 | Write Claude Code hook config template | FR-9.2 | Valid `.claude/settings.json` hook format | Done |
+| 3.9 | Write Copilot hook config template (VS Code local agent mode) | FR-9.2 | Valid `.github/hooks/chronicle.json` format Schema validated against current Copilot docs. | In Progress |
 | 3.10 | Wire templates into `chronicle init` — skill file generation, hook config merging, instruction appending, .gitignore | FR-1, FR-9.3 | `chronicle init` produces full directory structure from Section 6 | Not Started |
 | 3.11 | Implement idempotent instruction appending — detect `<!-- chronicle:start -->` markers, replace block if present | FR-1.4, FR-1.6 | Re-running init updates instructions without duplication | Not Started |
 | 3.12 | Test `chronicle init` end-to-end with both agents | — | All files created correctly for `--agent claude-code --agent copilot` | Not Started |
