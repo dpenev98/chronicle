@@ -14,14 +14,15 @@ function normalizeTemplateContent(content: string): string {
 }
 
 function renderSkillFrontmatter(agent: SupportedAgent, name: string, description: string): string {
-  if (agent === 'claude-code') {
-    return '';
-  }
-
-  return normalizeTemplateContent(`---
+  switch (agent) {
+    case 'claude-code':
+      return '';
+    case 'copilot':
+      return normalizeTemplateContent(`---
 name: ${name}
 description: ${description}
 ---`);
+  }
 }
 
 export function renderSkillTemplate(options: SkillTemplateOptions): string {

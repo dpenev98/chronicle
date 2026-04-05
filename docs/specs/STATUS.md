@@ -171,6 +171,14 @@ Practical outcome:
 - clearer control over machine-readable JSON versus human-readable text output
 - lower risk of command logic becoming tangled with I/O concerns
 
+### 7. Preserve hook safety guarantees
+
+The session-start hook is implemented so it always returns a successful payload shape and converts failures into warning context instead of crashing.
+
+Practical outcome:
+- aligns with the requirement that Chronicle must not block normal agent operation
+- protects agent startup from DB/config failures
+
 ### 8. Build templates as reusable generators, not ad hoc file blobs
 
 The Epic 3 template layer was implemented as typed renderer functions rather than static files copied directly into the repo.
@@ -179,14 +187,6 @@ Practical outcome:
 - `chronicle init` can later choose agent-specific formats at generation time
 - Copilot-specific frontmatter behavior is centralized instead of duplicated
 - instruction blocks and hook configs can be tested before `init` exists
-
-### 7. Preserve hook safety guarantees
-
-The session-start hook is implemented so it always returns a successful payload shape and converts failures into warning context instead of crashing.
-
-Practical outcome:
-- aligns with the requirement that Chronicle must not block normal agent operation
-- protects agent startup from DB/config failures
 
 ## Established Patterns
 
@@ -267,7 +267,7 @@ Current known validated state:
 - all implemented unit tests pass
 - all implemented command tests pass
 - template layer unit tests pass
-- current total: `46/46` tests passing at the last validation checkpoint
+- current total: `52/52` tests passing at the last validation checkpoint
 
 ## Current Repository Conventions
 

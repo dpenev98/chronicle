@@ -33,7 +33,7 @@ Create a Chronicle memory from existing project files, documents, or pasted sour
 ## Command pattern
 
 \`\`\`bash
-echo '{"title":"...","description":"...","summary":"...","parentIds":[],"agent":"claude-code"}' | chronicle create --stdin
+echo '{"title":"...","description":"...","summary":"...","parentIds":[],"agent":"${agent}"}' | chronicle create --stdin
 \`\`\`
 
 Example usage:

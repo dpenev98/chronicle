@@ -37,7 +37,7 @@ Think: if a future agent reads only the description, would it know whether this 
 ## Command pattern
 
 \`\`\`bash
-echo '{"title":"...","description":"...","summary":"...","parentIds":["memory-1"],"agent":"claude-code"}' | chronicle create --stdin
+echo '{"title":"...","description":"...","summary":"...","parentIds":["memory-1"],"agent":"${agent}"}' | chronicle create --stdin
 \`\`\`
 
 Always prefer \`--stdin\` mode so long summaries and structured markdown remain reliable across shells.`,

@@ -68,18 +68,24 @@ describe('template layer', () => {
 
   it('renders the create-memory skill with config-aware and stdin guidance', () => {
     const content = renderCreateMemorySkill('claude-code');
+    const copilotContent = renderCreateMemorySkill('copilot');
 
     expect(content).toContain('.chronicle/config.json');
     expect(content).toContain('chronicle create --stdin');
     expect(content).toContain('## Goals');
     expect(content).toContain('if a future agent reads only the description');
+    expect(content).toContain('"agent":"claude-code"');
+    expect(copilotContent).toContain('"agent":"copilot"');
   });
 
   it('renders the create-memory-from skill around supplied source material', () => {
     const content = renderCreateMemoryFromSkill('claude-code');
+    const copilotContent = renderCreateMemoryFromSkill('copilot');
 
     expect(content).toContain('Analyze the supplied files or pasted text');
     expect(content).toContain('/create-memory-from @docs/architecture.md');
+    expect(content).toContain('"agent":"claude-code"');
+    expect(copilotContent).toContain('"agent":"copilot"');
   });
 
   it('renders update, list, and recall skills with the expected commands', () => {
