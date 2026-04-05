@@ -10,6 +10,8 @@ This document is the authoritative implementation plan for the Chronicle MVP. It
 
 ## 1. Technology Stack
 
+[STATUS]: Done
+
 | Component | Technology | Rationale |
 |-----------|-----------|-----------|
 | Language | TypeScript (Node.js) | Native fit for agent ecosystems, minimal deps |
@@ -26,6 +28,8 @@ This document is the authoritative implementation plan for the Chronicle MVP. It
 ---
 
 ## 2. Architecture
+
+[STATUS]: Defined
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -65,6 +69,8 @@ This document is the authoritative implementation plan for the Chronicle MVP. It
 ---
 
 ## 3. SQLite Schema
+
+[STATUS]: Done
 
 ```sql
 -- Default journal mode (rollback journal) — simpler Git story than WAL,
@@ -106,6 +112,8 @@ INSERT OR IGNORE INTO schema_version (version, applied_at)
 ---
 
 ## 4. CLI Commands
+
+[STATUS]: Not Started
 
 ### 4.1 `chronicle init`
 
@@ -247,6 +255,8 @@ chronicle hook session-start
 
 ## 5. Error Handling Pattern (FR-13)
 
+[STATUS]: In Progress
+
 All CLI commands follow a consistent error pattern:
 
 **Stdout:** Success output (JSON for machine consumption, table for human)
@@ -266,6 +276,8 @@ All CLI commands follow a consistent error pattern:
 ---
 
 ## 6. Repo Directory Structure Created by `chronicle init`
+
+[STATUS]: Not Started
 
 ```
 <repo-root>/
@@ -309,6 +321,8 @@ All CLI commands follow a consistent error pattern:
 ---
 
 ## 7. Agent Integration — Hook Configuration
+
+[STATUS]: Not Started
 
 ### Claude Code
 
@@ -356,6 +370,8 @@ The SessionStart hook is added to `.github/hooks/chronicle.json`:
 ---
 
 ## 8. Agent Integration — Skills
+
+[STATUS]: Not Started
 
 Five SKILL.md files are generated per agent. They share identical content; only the directory differs (`.claude/skills/` vs `.github/skills/`).
 
@@ -406,6 +422,8 @@ For brownfield adoption — creating memories from existing project artifacts (F
 
 ## 9. Agent Integration — Custom Instructions
 
+[STATUS]: Not Started
+
 Appended to `CLAUDE.md` and `.github/copilot-instructions.md` between marker comments:
 
 ```markdown
@@ -450,6 +468,8 @@ on its claims. The codebase may have changed since the memory was created.
 
 ## 10. Configuration
 
+[STATUS]: Done
+
 **File:** `.chronicle/config.json`
 
 ```json
@@ -475,6 +495,8 @@ on its claims. The codebase may have changed since the memory was created.
 ---
 
 ## 11. Project Structure (Chronicle CLI Package)
+
+[STATUS]: In Progress
 
 ```
 chronicle/
@@ -542,78 +564,90 @@ chronicle/
 
 ## 12. Implementation Epics
 
+[STATUS]: In Progress
+
 ### Epic 1: Project Scaffold & Database Layer
+
+[STATUS]: Done
 
 **Goal:** Working CLI skeleton with SQLite CRUD — the foundation everything else builds on.
 
-| # | Task | FR | Acceptance |
-|---|------|-----|------------|
-| 1.1 | Initialize npm project: `package.json`, `tsconfig.json`, `tsup.config.ts`, install deps | — | `npm run build` compiles without errors |
-| 1.2 | Create `bin/chronicle.js` entry point + `src/index.ts` with commander skeleton (no commands yet) | — | `chronicle --version` and `chronicle --help` work |
-| 1.3 | Implement `src/db/connection.ts` — open/create SQLite DB, default journal mode, handle path resolution | FR-14.1 | Can create and open a DB file at `.chronicle/chronicle.db` |
-| 1.4 | Implement `src/db/schema.ts` — create tables, indexes, schema_version tracking | FR-1.6 | Tables created with `IF NOT EXISTS`, version tracked |
-| 1.5 | Implement `src/db/queries.ts` — prepared statements: insertMemory, updateMemory, getMemory, listMemories, deleteMemory, supersede. **All user input must be bound via parameterized placeholders — no string concatenation into SQL.** | FR-2 through FR-7 | All queries work in isolation with test data. |
-| 1.6 | Implement `src/config/config.ts` — read/write/validate config.json, sensible defaults | FR-8 | Missing config → defaults. Invalid config → clear error. |
-| 1.7 | Implement `src/utils/tokens.ts` — `estimateTokens(text): number` | FR-2.7 | `Math.ceil(text.length / 4)` returns expected values |
-| 1.8 | Implement `src/utils/validation.ts` — validate required fields, parse JSON arrays for parentIds, enforce max length on `title` (160 chars) and `description` (600 chars) | FR-13.4 | Malformed input → structured error. Oversized fields → rejected with clear message. |
-| 1.9 | Implement `src/utils/errors.ts` — error types, exit code constants, `formatError()` for JSON/text output | FR-13 | Consistent error format across all commands |
-| 1.10 | Implement `src/utils/paths.ts` — find `.chronicle/` by walking up from cwd | FR-14.1 | Works from repo root and subdirectories |
-| 1.11 | Write unit tests for db, config, tokens, validation, errors | — | All pass |
+| # | Task | FR | Acceptance | Status |
+|---|------|-----|------------|--------|
+| 1.1 | Initialize npm project: `package.json`, `tsconfig.json`, `tsup.config.ts`, install deps | — | `npm run build` compiles without errors | Done |
+| 1.2 | Create `bin/chronicle.js` entry point + `src/index.ts` with commander skeleton (no commands yet) | — | `chronicle --version` and `chronicle --help` work | Done |
+| 1.3 | Implement `src/db/connection.ts` — open/create SQLite DB, default journal mode, handle path resolution | FR-14.1 | Can create and open a DB file at `.chronicle/chronicle.db` | Done |
+| 1.4 | Implement `src/db/schema.ts` — create tables, indexes, schema_version tracking | FR-1.6 | Tables created with `IF NOT EXISTS`, version tracked | Done |
+| 1.5 | Implement `src/db/queries.ts` — prepared statements: insertMemory, updateMemory, getMemory, listMemories, deleteMemory, supersede. **All user input must be bound via parameterized placeholders — no string concatenation into SQL.** | FR-2 through FR-7 | All queries work in isolation with test data. | Done |
+| 1.6 | Implement `src/config/config.ts` — read/write/validate config.json, sensible defaults | FR-8 | Missing config → defaults. Invalid config → clear error. | Done |
+| 1.7 | Implement `src/utils/tokens.ts` — `estimateTokens(text): number` | FR-2.7 | `Math.ceil(text.length / 4)` returns expected values | Done |
+| 1.8 | Implement `src/utils/validation.ts` — validate required fields, parse JSON arrays for parentIds, enforce max length on `title` (160 chars) and `description` (600 chars) | FR-13.4 | Malformed input → structured error. Oversized fields → rejected with clear message. | Done |
+| 1.9 | Implement `src/utils/errors.ts` — error types, exit code constants, `formatError()` for JSON/text output | FR-13 | Consistent error format across all commands | Done |
+| 1.10 | Implement `src/utils/paths.ts` — find `.chronicle/` by walking up from cwd | FR-14.1 | Works from repo root and subdirectories | Done |
+| 1.11 | Write unit tests for db, config, tokens, validation, errors | — | All pass | Done |
 
 ### Epic 2: CLI Commands
 
+[STATUS]: Not Started
+
 **Goal:** All 8 CLI commands wired up and working.
 
-| # | Task | FR | Acceptance |
-|---|------|-----|------------|
-| 2.1 | Implement `chronicle init` — create .chronicle/, DB, config, .gitignore entries. Idempotent. | FR-1 | Running twice doesn't destroy data. .gitignore updated. |
-| 2.2 | Implement `chronicle create` — args mode + `--stdin` mode. Validate, compute tokens, insert, return ID. | FR-2 | Both input modes work. Token limit enforced. |
-| 2.3 | Implement `chronicle update <id>` — partial updates, --stdin mode. | FR-4 | Partial update preserves unchanged fields. |
-| 2.4 | Implement `chronicle get <id>` — return full JSON. | FR-7 | Found → JSON. Not found → exit 1 + error. |
-| 2.5 | Implement `chronicle list` — format, filtering, pagination, superseded exclusion. | FR-7 | Default excludes superseded. Pagination works. |
-| 2.6 | Implement `chronicle delete <id>` — TTY detection, --force. | FR-6 | Interactive → prompts. Non-interactive without --force → error. |
-| 2.7 | Implement `chronicle supersede <old> <new>` — validate both IDs, referential integrity checks (no self-supersede, no cycles). | FR-5 | Invalid IDs → error. Self-supersede → error. Cycles → error. Valid → superseded_by_id set. |
-| 2.8 | Implement `chronicle hook session-start` — output SessionStart JSON, always exit 0. | FR-3, FR-13.1 | No .chronicle/ → silent exit 0. Empty DB → empty-store message. Valid catalog → correct JSON with truncation signal. |
-| 2.9 | Write command tests (one test file per command) | — | All pass |
+| # | Task | FR | Acceptance | Status |
+|---|------|-----|------------|--------|
+| 2.1 | Implement `chronicle init` — create .chronicle/, DB, config, .gitignore entries. Idempotent. | FR-1 | Running twice doesn't destroy data. .gitignore updated. | Not Started |
+| 2.2 | Implement `chronicle create` — args mode + `--stdin` mode. Validate, compute tokens, insert, return ID. | FR-2 | Both input modes work. Token limit enforced. | Not Started |
+| 2.3 | Implement `chronicle update <id>` — partial updates, --stdin mode. | FR-4 | Partial update preserves unchanged fields. | Not Started |
+| 2.4 | Implement `chronicle get <id>` — return full JSON. | FR-7 | Found → JSON. Not found → exit 1 + error. | Not Started |
+| 2.5 | Implement `chronicle list` — format, filtering, pagination, superseded exclusion. | FR-7 | Default excludes superseded. Pagination works. | Not Started |
+| 2.6 | Implement `chronicle delete <id>` — TTY detection, --force. | FR-6 | Interactive → prompts. Non-interactive without --force → error. | Not Started |
+| 2.7 | Implement `chronicle supersede <old> <new>` — validate both IDs, referential integrity checks (no self-supersede, no cycles). | FR-5 | Invalid IDs → error. Self-supersede → error. Cycles → error. Valid → superseded_by_id set. | Not Started |
+| 2.8 | Implement `chronicle hook session-start` — output SessionStart JSON, always exit 0. | FR-3, FR-13.1 | No .chronicle/ → silent exit 0. Empty DB → empty-store message. Valid catalog → correct JSON with truncation signal. | Not Started |
+| 2.9 | Write command tests (one test file per command) | — | All pass | Not Started |
 
 ### Epic 3: Agent Integration Templates & Init Scaffolding
 
+[STATUS]: Not Started
+
 **Goal:** `chronicle init` produces all agent integration artifacts. Prompt engineering is done.
 
-| # | Task | FR | Acceptance |
-|---|------|-----|------------|
-| 3.1 | Write `/create-memory` SKILL.md template — **this is the most critical prompt**. Must produce high-quality descriptions and structured summaries. Includes `--stdin` usage instruction. | FR-9.4, FR-9.8, FR-2.4 | Manual test: give a sample conversation → agent produces a well-structured memory |
-| 3.2 | Write `/create-memory-from` SKILL.md template — for brownfield adoption. Instructs agent to analyze provided files/text instead of conversation. Same quality standards. | FR-9.4, FR-2.10 | Manual test: point at an existing doc → agent produces a well-structured memory |
-| 3.3 | Write `/update-memory` SKILL.md template | FR-9.4 | Clear step-by-step for loading, comparing, updating |
-| 3.4 | Write `/list-memories` SKILL.md template | FR-9.4 | Runs `chronicle list --format table` |
-| 3.5 | Write `/recall` SKILL.md template | FR-9.4 | Runs `chronicle get <id>`, presents content |
-| 3.6 | Write custom instruction snippet for CLAUDE.md — includes coexistence note, budget rules, conflict handling, marker comments | FR-9.5, FR-9.9 | All FR-9.5 bullet points covered |
-| 3.7 | Write custom instruction snippet for copilot-instructions.md — same content adapted for Copilot | FR-9.5, FR-9.9 | Same coverage |
-| 3.8 | Write Claude Code hook config template | FR-9.2 | Valid `.claude/settings.json` hook format |
-| 3.9 | Write Copilot hook config template (VS Code local agent mode) | FR-9.2 | Valid `.github/hooks/chronicle.json` format Schema validated against current Copilot docs. |
-| 3.10 | Wire templates into `chronicle init` — skill file generation, hook config merging, instruction appending, .gitignore | FR-1, FR-9.3 | `chronicle init` produces full directory structure from Section 6 |
-| 3.11 | Implement idempotent instruction appending — detect `<!-- chronicle:start -->` markers, replace block if present | FR-1.4, FR-1.6 | Re-running init updates instructions without duplication |
-| 3.12 | Test `chronicle init` end-to-end with both agents | — | All files created correctly for `--agent claude-code --agent copilot` |
+| # | Task | FR | Acceptance | Status |
+|---|------|-----|------------|--------|
+| 3.1 | Write `/create-memory` SKILL.md template — **this is the most critical prompt**. Must produce high-quality descriptions and structured summaries. Includes `--stdin` usage instruction. | FR-9.4, FR-9.8, FR-2.4 | Manual test: give a sample conversation → agent produces a well-structured memory | Not Started |
+| 3.2 | Write `/create-memory-from` SKILL.md template — for brownfield adoption. Instructs agent to analyze provided files/text instead of conversation. Same quality standards. | FR-9.4, FR-2.10 | Manual test: point at an existing doc → agent produces a well-structured memory | Not Started |
+| 3.3 | Write `/update-memory` SKILL.md template | FR-9.4 | Clear step-by-step for loading, comparing, updating | Not Started |
+| 3.4 | Write `/list-memories` SKILL.md template | FR-9.4 | Runs `chronicle list --format table` | Not Started |
+| 3.5 | Write `/recall` SKILL.md template | FR-9.4 | Runs `chronicle get <id>`, presents content | Not Started |
+| 3.6 | Write custom instruction snippet for CLAUDE.md — includes coexistence note, budget rules, conflict handling, marker comments | FR-9.5, FR-9.9 | All FR-9.5 bullet points covered | Not Started |
+| 3.7 | Write custom instruction snippet for copilot-instructions.md — same content adapted for Copilot | FR-9.5, FR-9.9 | Same coverage | Not Started |
+| 3.8 | Write Claude Code hook config template | FR-9.2 | Valid `.claude/settings.json` hook format | Not Started |
+| 3.9 | Write Copilot hook config template (VS Code local agent mode) | FR-9.2 | Valid `.github/hooks/chronicle.json` format Schema validated against current Copilot docs. | Not Started |
+| 3.10 | Wire templates into `chronicle init` — skill file generation, hook config merging, instruction appending, .gitignore | FR-1, FR-9.3 | `chronicle init` produces full directory structure from Section 6 | Not Started |
+| 3.11 | Implement idempotent instruction appending — detect `<!-- chronicle:start -->` markers, replace block if present | FR-1.4, FR-1.6 | Re-running init updates instructions without duplication | Not Started |
+| 3.12 | Test `chronicle init` end-to-end with both agents | — | All files created correctly for `--agent claude-code --agent copilot` | Not Started |
 
 ### Epic 4: Integration Testing & Polish
 
+[STATUS]: Not Started
+
 **Goal:** Full lifecycle works. Manual testing with real agents. Ready to use.
 
-| # | Task | FR | Acceptance |
-|---|------|-----|------------|
-| 4.1 | Integration test: `init → create → list → get → update → supersede → list → delete` | All | Full lifecycle passes |
-| 4.2 | Integration test: hook output format matches Claude Code expectations | FR-3.1, FR-9.6 | JSON output parses correctly, < 5 seconds |
-| 4.3 | Integration test: hook output format matches Copilot expectations | FR-3.1, FR-9.6 | JSON output parses correctly |
-| 4.4 | Integration test: `--stdin` mode with large payloads (>10KB summary) | FR-2.9 | Creates/updates successfully |
-| 4.5 | Integration test: error scenarios (missing DB, corrupt DB, invalid input, missing CLI) | FR-13 | Graceful errors, no crashes, exit codes correct |
-| 4.6 | Manual test: Claude Code session — init, create memory, new session, verify catalog injection + retrieval | FR-3, FR-9 | End-to-end works |
-| 4.7 | Manual test: GH Copilot session — same flow | FR-3, FR-9 | End-to-end works |
-| 4.8 | Write README.md — installation, quickstart, command reference, configuration | — | Developer can set up Chronicle from README alone |
-| 4.9 | Prepare for npm publish — package.json bin field, files field, .npmignore | FR-14.4 | `npm pack` produces clean package |
+| # | Task | FR | Acceptance | Status |
+|---|------|-----|------------|--------|
+| 4.1 | Integration test: `init → create → list → get → update → supersede → list → delete` | All | Full lifecycle passes | Not Started |
+| 4.2 | Integration test: hook output format matches Claude Code expectations | FR-3.1, FR-9.6 | JSON output parses correctly, < 5 seconds | Not Started |
+| 4.3 | Integration test: hook output format matches Copilot expectations | FR-3.1, FR-9.6 | JSON output parses correctly | Not Started |
+| 4.4 | Integration test: `--stdin` mode with large payloads (>10KB summary) | FR-2.9 | Creates/updates successfully | Not Started |
+| 4.5 | Integration test: error scenarios (missing DB, corrupt DB, invalid input, missing CLI) | FR-13 | Graceful errors, no crashes, exit codes correct | Not Started |
+| 4.6 | Manual test: Claude Code session — init, create memory, new session, verify catalog injection + retrieval | FR-3, FR-9 | End-to-end works | Not Started |
+| 4.7 | Manual test: GH Copilot session — same flow | FR-3, FR-9 | End-to-end works | Not Started |
+| 4.8 | Write README.md — installation, quickstart, command reference, configuration | — | Developer can set up Chronicle from README alone | Not Started |
+| 4.9 | Prepare for npm publish — package.json bin field, files field, .npmignore | FR-14.4 | `npm pack` produces clean package | Not Started |
 
 ---
 
 ## 13. Memory Summary Format
+
+[STATUS]: Defined
 
 The `summary` field uses this structured markdown template (embedded in the `/create-memory` SKILL.md):
 
@@ -647,6 +681,8 @@ The `summary` field uses this structured markdown template (embedded in the `/cr
 ---
 
 ## 14. Acceptance Criteria (MVP)
+
+[STATUS]: Defined
 
 | # | Criterion | Covers |
 |---|-----------|--------|
@@ -683,6 +719,8 @@ The `summary` field uses this structured markdown template (embedded in the `/cr
 
 ## 15. Constraints
 
+[STATUS]: Defined
+
 - **Zero external API calls** — all LLM work delegated to the host agent
 - **2 runtime npm dependencies** — `better-sqlite3`, `commander`
 - **Cross-platform** — all hook scripts are CLI subcommands executed via Node.js, no shell scripts
@@ -699,6 +737,8 @@ The `summary` field uses this structured markdown template (embedded in the `/cr
 ---
 
 ## 16. Out of Scope (MVP)
+
+[STATUS]: Defined
 
 - PreCompact auto-save / session snapshots
 - Vector embeddings / semantic search (qmd)
@@ -721,6 +761,8 @@ See `docs/functional-requirements.md` Section 6 for the full future consideratio
 ---
 
 ## 17. Implementation Order & Dependencies
+
+[STATUS]: Defined
 
 ```
 Epic 1 (Foundation)
