@@ -84,11 +84,12 @@ chronicle/
 ├── src/
 │   ├── index.ts          # Commander program setup + command registration
 │   ├── commands/         # One file per command + shared runtime helpers
+│   ├── templates/        # Skill, instruction, and hook template renderers for future init generation
 │   ├── db/               # SQLite connection, schema, prepared-statement queries
 │   ├── config/           # .chronicle/config.json read/write/validation
 │   └── utils/            # Tokens, validation, errors, path resolution
 ├── tests/
-│   ├── unit/             # Unit tests for foundational modules
+│   ├── unit/             # Unit tests for foundational modules and template renderers
 │   └── commands/         # Command execution tests + test helpers
 └── docs/
     ├── architecture.md   # Architectural patterns and design decisions

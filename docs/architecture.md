@@ -12,7 +12,8 @@
 │  │ (catalog     │  │ /update-memory   │  │ (retrieval logic,  │  │
 │  │  injection)  │  │ /recall          │  │  budget rules)     │  │
 │  │              │  │ /list-memories   │  │                    │  │
-│  │              │  │ /create-from     │  │                    │  │
+│  │              │  │ /create-memory-  │  │                    │  │
+│  │              │  │  from            │  │                    │  │
 │  └──────┬───────┘  └────────┬─────────┘  └────────────────────┘  │
 │         │                   │                                    │
 │         ▼                   ▼                                    │
@@ -44,6 +45,8 @@ src/commands/*.ts             Command layer — one file per command
   ↓
 src/commands/shared.ts        Runtime abstraction — I/O, time, IDs, context helpers
   ↓
+src/templates/*               Artifact template layer — skills, instructions, hook configs for future init generation
+  ↓
 src/utils/ + src/config/      Validation, error model, config, path resolution
   ↓
 src/db/*                      Persistence — connection, schema, prepared-statement queries
@@ -56,6 +59,7 @@ src/db/*                      Persistence — connection, schema, prepared-state
 | **Entrypoint** | Construct Commander program, create production runtime, register commands |
 | **Commands** | Accept typed options, orchestrate validation + DB access, return typed results |
 | **Runtime** | Abstract `process` (stdout/stderr/stdin, time, IDs, TTY, confirm prompts) |
+| **Templates** | Render agent-managed artifact content for skills, instruction blocks, and hook configs |
 | **Utils/Config** | Validate input, resolve paths, read config, shape structured errors |
 | **Persistence** | Open SQLite, manage schema, execute prepared statements, map rows to domain objects |
 
@@ -90,6 +94,21 @@ All input is validated before any DB write or side effect. Field lengths, requir
 
 `hook session-start` **always exits 0**. Errors become warning context in the output payload. Three states: no `.chronicle/` → empty `{}`, zero memories → guidance message, memories → catalog.
 
+### 7. Reusable Artifact Generation
+
+Agent integration artifacts are represented as typed renderer functions instead of static file blobs.
+
+This allows Chronicle to:
+
+- centralize agent-specific differences at the template boundary
+- unit-test template output before `init` exists
+- keep future `chronicle init` focused on filesystem writes and merge rules rather than string construction
+
+One concrete example is the skill layer:
+
+- Claude skill templates render plain markdown content
+- Copilot skill templates render YAML frontmatter plus markdown for slash-command discovery
+
 ---
 
 ## Data Flow
@@ -115,6 +134,25 @@ CLI args / stdin JSON
 | **Parent ancestry** | JSON array in `parent_ids` TEXT column | Simple schema, easy CLI input, adequate for current reference queries. |
 | **Timestamps** | UTC ISO 8601 strings | Human-readable, sortable, no timezone ambiguity. |
 | **IDs** | `crypto.randomUUID()` text | Built-in Node.js, no dependency. |
+
+---
+
+## Template Generation Flow
+
+The current template layer is a precursor to `chronicle init`.
+
+Its intended future flow is:
+
+```text
+chronicle init
+  -> choose target agents
+  -> select template renderers from src/templates/*
+  -> render skills / instructions / hooks
+  -> write or merge managed files into the repo
+  -> preserve user-owned content where required
+```
+
+Current implementation stops at the rendering boundary. The remaining work is the file-generation and merge orchestration.
 
 ---
 
