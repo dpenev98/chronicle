@@ -113,7 +113,7 @@ INSERT OR IGNORE INTO schema_version (version, applied_at)
 
 ## 4. CLI Commands
 
-[STATUS]: Not Started
+[STATUS]: In Progress
 
 ### 4.1 `chronicle init`
 
@@ -588,21 +588,21 @@ chronicle/
 
 ### Epic 2: CLI Commands
 
-[STATUS]: Not Started
+[STATUS]: In Progress
 
 **Goal:** All 8 CLI commands wired up and working.
 
 | # | Task | FR | Acceptance | Status |
 |---|------|-----|------------|--------|
 | 2.1 | Implement `chronicle init` — create .chronicle/, DB, config, .gitignore entries. Idempotent. | FR-1 | Running twice doesn't destroy data. .gitignore updated. | Not Started |
-| 2.2 | Implement `chronicle create` — args mode + `--stdin` mode. Validate, compute tokens, insert, return ID. | FR-2 | Both input modes work. Token limit enforced. | Not Started |
-| 2.3 | Implement `chronicle update <id>` — partial updates, --stdin mode. | FR-4 | Partial update preserves unchanged fields. | Not Started |
-| 2.4 | Implement `chronicle get <id>` — return full JSON. | FR-7 | Found → JSON. Not found → exit 1 + error. | Not Started |
-| 2.5 | Implement `chronicle list` — format, filtering, pagination, superseded exclusion. | FR-7 | Default excludes superseded. Pagination works. | Not Started |
-| 2.6 | Implement `chronicle delete <id>` — TTY detection, --force. | FR-6 | Interactive → prompts. Non-interactive without --force → error. | Not Started |
-| 2.7 | Implement `chronicle supersede <old> <new>` — validate both IDs, referential integrity checks (no self-supersede, no cycles). | FR-5 | Invalid IDs → error. Self-supersede → error. Cycles → error. Valid → superseded_by_id set. | Not Started |
-| 2.8 | Implement `chronicle hook session-start` — output SessionStart JSON, always exit 0. | FR-3, FR-13.1 | No .chronicle/ → silent exit 0. Empty DB → empty-store message. Valid catalog → correct JSON with truncation signal. | Not Started |
-| 2.9 | Write command tests (one test file per command) | — | All pass | Not Started |
+| 2.2 | Implement `chronicle create` — args mode + `--stdin` mode. Validate, compute tokens, insert, return ID. | FR-2 | Both input modes work. Token limit enforced. | Done |
+| 2.3 | Implement `chronicle update <id>` — partial updates, --stdin mode. | FR-4 | Partial update preserves unchanged fields. | Done |
+| 2.4 | Implement `chronicle get <id>` — return full JSON. | FR-7 | Found → JSON. Not found → exit 1 + error. | Done |
+| 2.5 | Implement `chronicle list` — format, filtering, pagination, superseded exclusion. | FR-7 | Default excludes superseded. Pagination works. | Done |
+| 2.6 | Implement `chronicle delete <id>` — TTY detection, --force. | FR-6 | Interactive → prompts. Non-interactive without --force → error. | Done |
+| 2.7 | Implement `chronicle supersede <old> <new>` — validate both IDs, referential integrity checks (no self-supersede, no cycles). | FR-5 | Invalid IDs → error. Self-supersede → error. Cycles → error. Valid → superseded_by_id set. | Done |
+| 2.8 | Implement `chronicle hook session-start` — output SessionStart JSON, always exit 0. | FR-3, FR-13.1 | No .chronicle/ → silent exit 0. Empty DB → empty-store message. Valid catalog → correct JSON with truncation signal. | Done |
+| 2.9 | Write command tests (one test file per command) | — | All pass | Done |
 
 ### Epic 3: Agent Integration Templates & Init Scaffolding
 
