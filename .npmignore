@@ -1,0 +1,14 @@
+# Source and config (excluded by `files` allowlist, listed here for clarity)
+src/
+tests/
+docs/
+tsconfig.json
+tsup.config.ts
+AGENTS.md
+delivery-plan.md
+.github/
+
+# Editor and OS artifacts
+*.tgz
+.DS_Store
+Thumbs.db

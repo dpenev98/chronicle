@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { readConfig, writeConfig } from '../../src/config/config';
 import { executeInitCommand, verifyDatabaseIntegrity } from '../../src/commands/init';
 import { openDatabase } from '../../src/db/connection';
+import { readPackageVersion } from '../../src/utils/package';
 import { createQueries } from '../../src/db/queries';
 import { CURRENT_SCHEMA_VERSION, getCurrentSchemaVersion, initializeSchema } from '../../src/db/schema';
 import { ConfigError, DatabaseError, RepositoryError, ValidationError } from '../../src/utils/errors';
@@ -51,7 +52,7 @@ describe('init command', () => {
     expect(result.created_paths).toContain('CLAUDE.md');
     expect(existsSync(repo.dbPath)).toBe(true);
     expect(schemaVersion).toBe(CURRENT_SCHEMA_VERSION);
-    expect(config.chronicleVersion).toBe('1.0.0');
+    expect(config.chronicleVersion).toBe(readPackageVersion());
     expect(readFileSync(join(repo.repoRoot, '.gitignore'), 'utf8')).toContain('.chronicle/chronicle.db-journal');
     expect(readFileSync(join(repo.repoRoot, '.claude', 'settings.json'), 'utf8')).toContain('chronicle hook session-start');
     expect(readFileSync(join(repo.repoRoot, 'CLAUDE.md'), 'utf8')).toContain('<!-- chronicle:start -->');
@@ -114,7 +115,7 @@ describe('init command', () => {
     const settingsContent = readFileSync(join(repo.repoRoot, '.claude', 'settings.json'), 'utf8');
 
     expect(memory?.id).toBe(memoryId);
-    expect(config.chronicleVersion).toBe('1.0.0');
+    expect(config.chronicleVersion).toBe(readPackageVersion());
     expect(config.maxMemoriesToPull).toBe(9);
     expect(result.updated_paths).toContain('.chronicle/config.json');
     expect(result.updated_paths).toContain('CLAUDE.md');
