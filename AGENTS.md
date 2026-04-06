@@ -47,7 +47,8 @@ chronicle/
 │   └── utils/                # tokens, validation, errors, paths
 ├── tests/
 │   ├── unit/                 # Unit tests (utilities, DB modules, template renderers)
-│   └── commands/             # Command tests + helpers.ts (test runtime, repo seeding)
+│   ├── commands/             # Command tests + helpers.ts (test runtime, repo seeding)
+│   └── integration/          # Registered-CLI lifecycle and cross-command integration tests
 ├── docs/specs/               # FR spec, implementation plan, STATUS, gap analysis
 └── docs/architecture.md      # Architectural patterns (evolving)
 ```
@@ -59,6 +60,7 @@ chronicle/
 - `src/templates/skills/index.ts` — Canonical skill template manifest for both supported agents
 - `src/utils/errors.ts` — Error hierarchy (`ChronicleError` subclasses) and exit codes
 - `tests/commands/helpers.ts` — `createGitRepo()`, `createInitializedRepo()`, `createTestRuntime()`, `seedMemory()`
+- `tests/integration/lifecycle.test.ts` — End-to-end registered-CLI lifecycle, hook, and error-path coverage
 
 ---
 
@@ -90,7 +92,7 @@ The project docs are the **source of truth** for scope, sequencing, and design d
 
 - **All SQL uses parameterized placeholders (`@name` or `?`).** Never concatenate user input into SQL.
 - **All queries are prepared statements** in `src/db/queries.ts`. Commands never write raw SQL.
-- **DB connections closed in `finally` blocks.** Rollback journal mode (`DELETE`) — do not switch to WAL.
+- **DB connections closed in `finally` blocks, and partially opened handles must be cleaned up if DB initialization fails.** Rollback journal mode (`DELETE`) — do not switch to WAL.
 - **Timestamps are UTC ISO 8601** strings generated via `new Date().toISOString()`.
 
 ### CLI Output
@@ -143,6 +145,7 @@ Agent integration artifacts are generated through typed renderers in `src/templa
 - **Test infra** in `tests/commands/helpers.ts`: `createGitRepo()`, `createInitializedRepo()`, `seedMemory()`, `createTestRuntime()`.
 - **Temp dirs** cleaned in `afterEach` via the `repos` array pattern.
 - **Every new command** → `tests/commands/<name>.test.ts`. Every new utility → `tests/unit/<name>.test.ts`.
+- **Cross-command and end-to-end CLI behavior** → extend `tests/integration/lifecycle.test.ts`.
 - **Template renderers** should be validated in `tests/unit/templates.test.ts` or a neighboring focused unit test file.
 - Always run `npm run typecheck && npm test` before considering work complete.
 
