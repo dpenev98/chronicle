@@ -28,7 +28,7 @@ Execute the workflow end-to-end without waiting for additional confirmation unle
 5. Run `git log origin/main..HEAD --pretty=format:"%h | %s" --date=short` to retrieve commit history for the current branch and gain insights on the intent behind changes.
 6. Run `git diff main --stat` to get an overview of changed files.
 7. For each file in the diff stat, run `git diff main -- <filepath>` individually to get the full diff per file. Use the file-reading tools on each changed file to ensure you have the complete context. Do NOT rely solely on terminal output which may truncate.
-8. Perform the code review following the **Review Criteria** and **Project Conventions** below. Output to `code-review-<branch-name>-<YYYY-MM-DD>.md` in the repository root.
+8. Perform the code review following the **Review Criteria** and **Project Conventions** below. Sanitize the branch name by replacing `/` and `\\` with `-`, then output to `code-review-<sanitized-branch-name>-<YYYY-MM-DD>.md` in the repository root.
 
 ---
 
