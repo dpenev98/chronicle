@@ -1,6 +1,6 @@
 # Chronicle
 
-> **Status**: This project is still in early stage development and is not yet ready for production use. The core CLI command set is implemented, including `chronicle init`, but Epic 3/4 validation and polish work is still in progress. Refer to [implementation plan](./docs/specs/implementation-plan.md) for the planned work and [STATUS.md](./docs/specs/STATUS.md) for the current progress.
+> **Status**: This project is still in early stage development and is not yet ready for production use. The core CLI command set and automated lifecycle integration coverage are implemented, while Epic 4 manual validation and polish work remain in progress. Refer to [implementation plan](./docs/specs/implementation-plan.md) for the planned work and [STATUS.md](./docs/specs/STATUS.md) for the current progress.
 
 Chronicle is a **project-scoped, local memory layer for coding agents**.
 
@@ -92,7 +92,8 @@ chronicle/
 │   └── utils/            # Tokens, validation, errors, path resolution
 ├── tests/
 │   ├── unit/             # Unit tests for foundational modules and template renderers
-│   └── commands/         # Command execution tests + test helpers
+│   ├── commands/         # Command execution tests + test helpers
+│   └── integration/      # Registered-CLI lifecycle and cross-command integration tests
 └── docs/
     ├── architecture.md   # Architectural patterns and design decisions
     └── specs/            # Functional requirements, implementation plan, status

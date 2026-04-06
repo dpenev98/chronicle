@@ -117,7 +117,18 @@ Manual follow-up:
 
 ### Epic 4: Integration Testing & Polish
 
-Status: Not Started
+Status: In Progress
+
+What was completed in this implementation pass:
+- added `tests/integration/lifecycle.test.ts` for registered-CLI end-to-end coverage
+- covered the full lifecycle flow: `init → create → list → get → update → supersede → list → delete`
+- verified Claude and Copilot `hook session-start` payload shapes
+- exercised large `--stdin` payload handling for create/update
+- added integration coverage for missing DB, corrupt DB, invalid stdin, nested-cwd and idempotent `init`, config-driven list and hook behavior, interactive delete flows, supersession repointing/cycle rejection, and CLI binary contract expectations
+
+Remaining Epic 4 work:
+- manual real-agent validation for Claude Code and GitHub Copilot
+- README/polish/package publishing follow-through
 
 ## Technical Decisions Made During Implementation
 
@@ -270,6 +281,15 @@ Resolution:
 - Chronicle-owned skills and Copilot hook JSON now include managed headers/metadata
 - `getCurrentSchemaVersion()` now returns `0` when the `schema_version` table is absent, allowing init to treat that state as a migration/setup path instead of failing
 
+### Corrupt database connection cleanup
+
+Issue:
+- opening a corrupt Chronicle SQLite database could fail after the native handle had already been created, risking an unclosed handle when `journal_mode` initialization threw
+
+Resolution:
+- `openDatabase()` now closes any partially opened database handle before re-throwing a `DatabaseError`
+- integration coverage now exercises the corrupt-database hook path to guard this behavior
+
 ## Validation Status
 
 The current codebase has been validated with:
@@ -283,7 +303,8 @@ Current known validated state:
 - all implemented command tests pass
 - template layer unit tests pass
 - expanded `init` command coverage passes, including idempotency, invalid persisted files, overwrite semantics, and integrity-check error paths
-- current total: `71/71` tests passing at the latest validation checkpoint
+- Epic 4 lifecycle integration coverage passes, including hook payloads, large stdin payloads, deletion/supersession edge cases, config-driven behavior, and structured error paths
+- current total: `88/88` tests passing at the latest validation checkpoint
 
 ## Current Repository Conventions
 
@@ -310,16 +331,16 @@ Current implementation organization:
 ## What Is Intentionally Deferred Right Now
 
 Deferred for plan alignment:
-- Epic 4 integration/manual/polish work
+- manual Epic 4 real-agent validation and polish work
 - manual confirmation of the Copilot local hook schema against current public docs
 
 Reason:
-- the remaining work is now integration/manual/polish follow-through rather than core command or template-generation implementation
+- the remaining work is now manual validation and release/polish follow-through rather than core command, template-generation, or automated integration implementation
 
 ## Recommended Next Step
 
 The clean next step is:
-- continue Epic 4 with full lifecycle integration tests and manual real-agent validation, including confirmation of the Copilot local hook schema against current public docs
+- continue Epic 4 with manual Claude Code and GitHub Copilot validation, then finish README/publish polish, including confirmation of the Copilot local hook schema against current public docs
 
 If the implementation order is intentionally changed later, then:
 - external validation of the Copilot local hook JSON schema remains the main open Epic 3 item before broader polish work
@@ -330,6 +351,7 @@ Chronicle currently has:
 - a complete Epic 1 foundation
 - a complete and tested Epic 2 command layer
 - a complete Epic 3 template and init-generation layer that produces managed agent integration artifacts
+- automated Epic 4 lifecycle integration coverage for the implemented command set and hook flows
 - strong typing and explicit validation boundaries
 - consistent error handling and resource cleanup patterns
-- a stable base for Epic 4 integration testing and agent-specific validation work next
+- a stable base for remaining Epic 4 manual validation and polish work next

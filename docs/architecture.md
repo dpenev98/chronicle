@@ -77,7 +77,7 @@ Commands receive a `CommandRuntime` interface instead of touching `process` dire
 
 ### 3. Context Resolution
 
-`openChronicleContext(runtime)` walks up from `cwd` to find `.chronicle/`, opens DB + config, and returns a closeable context. `openOptionalChronicleContext()` returns `null` for hooks that must degrade gracefully. Context is always closed in a `finally` block.
+`openChronicleContext(runtime)` walks up from `cwd` to find `.chronicle/`, opens DB + config, and returns a closeable context. `openOptionalChronicleContext()` returns `null` for hooks that must degrade gracefully. Context is always closed in a `finally` block, and DB opening cleans up partially initialized handles before surfacing failures.
 
 ### 4. Typed Boundary Mapping
 
@@ -169,3 +169,5 @@ All errors extend `ChronicleError` with a `code`, `message`, and `exitCode`:
 - **Stdout** carries success output (JSON or table)
 - **Stderr** carries error output
 - Hook commands convert errors to warnings — they never set a non-zero exit code
+
+The current test suite validates this model across unit, command, and registered-CLI integration coverage, including corrupt-database and graceful hook degradation paths.
