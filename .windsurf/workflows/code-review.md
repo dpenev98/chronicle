@@ -31,11 +31,14 @@ You are an autonomous code review agent specializing in TypeScript CLI tools and
 4. Run `git branch --show-current` to get branch name.
 
 // turbo
-5. Run `git diff main --stat` to get overview of changed files.
+5. Run `git log origin/main..HEAD --pretty=format:"%h | %s" --date=short` to retrieve commit history for the current branch and gain insights on the intent behind changes.
 
-6. For each file in the diff stat, run `git diff main -- <filepath>` individually to get the full diff per file. Use the `read_file` tool on each changed file to ensure you have the complete context. Do NOT rely solely on terminal output which may truncate.
+// turbo
+6. Run `git diff main --stat` to get overview of changed files.
 
-7. Perform code review following the **Review Criteria** and **Project Conventions** below. Output to `code-review-<branch-name>-<YYYY-MM-DD>.md` in repo root.
+7. For each file in the diff stat, run `git diff main -- <filepath>` individually to get the full diff per file. Use the `read_file` tool on each changed file to ensure you have the complete context. Do NOT rely solely on terminal output which may truncate.
+
+8. Perform code review following the **Review Criteria** and **Project Conventions** below. Output to `code-review-<branch-name>-<YYYY-MM-DD>.md` in repo root.
 
 ---
 

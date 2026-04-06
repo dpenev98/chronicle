@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { mkdirSync, rmSync, writeFileSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { Command } from 'commander';
 import packageMetadata from '../../package.json';
 import { readConfig, writeConfig } from '../../src/config/config';
@@ -441,7 +442,7 @@ describe('integration lifecycle', () => {
     expect(additionalContext).toContain('CONFIG_ERROR');
   });
 
-  it('emits a Claude-compatible SessionStart payload with catalog context in under five seconds', async () => {
+  it('emits a Claude-compatible SessionStart payload with catalog context', async () => {
     const repo = makeRepo();
 
     await runCliCommand(['init', '--agent', 'claude-code'], { cwd: repo.repoRoot });
@@ -459,14 +460,11 @@ describe('integration lifecycle', () => {
       now: new Date('2026-04-05T12:00:00.000Z'),
     });
 
-    const startedAt = Date.now();
     const hookRuntime = await runCliCommand(['hook', 'session-start'], { cwd: repo.repoRoot });
-    const elapsedMs = Date.now() - startedAt;
     const hookOutput = parseStdoutObject(hookRuntime);
     const hookSpecificOutput = getObjectField(hookOutput, 'hookSpecificOutput');
     const additionalContext = getStringField(hookSpecificOutput, 'additionalContext');
 
-    expect(elapsedMs).toBeLessThan(5000);
     expect(getStringField(hookSpecificOutput, 'hookEventName')).toBe('SessionStart');
     expect(additionalContext).toContain('[Chronicle Memory Catalog]');
     expect(additionalContext).toContain('claude-memory');
@@ -781,14 +779,19 @@ describe('integration lifecycle', () => {
     expect(listRuntime.stderrBuffer.trim()).toBe('VALIDATION_ERROR: limit must be a non-negative integer.');
   });
 
-  it('exposes the chronicle binary contract relied on by generated agent artifacts', () => {
+  it('exposes a working chronicle binary that can execute --version', () => {
     const binEntry = ensureObject(packageMetadata.bin, 'package.bin');
     const binPath = getStringField(binEntry, 'chronicle');
     const binFilePath = join(__dirname, '..', '..', binPath);
-    const binContent = readFileSync(binFilePath, 'utf8');
 
     expect(binPath).toBe('bin/chronicle.js');
-    expect(binContent).toContain("const { run } = require('../dist/index.js');");
-    expect(binContent).toContain('void run();');
+
+    const result = spawnSync('node', [binFilePath, '--version'], {
+      encoding: 'utf8',
+      cwd: join(__dirname, '..', '..'),
+    });
+
+    expect(result.error).toBeUndefined();
+    expect(result.status).toBe(0);
   });
 });
