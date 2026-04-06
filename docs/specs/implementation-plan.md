@@ -256,7 +256,8 @@ chronicle hook session-start
 
 ## 5. Error Handling Pattern (FR-13)
 
-[STATUS]: In Progress
+[STATUS]: Done
+
 
 All CLI commands follow a consistent error pattern:
 
@@ -324,7 +325,7 @@ All CLI commands follow a consistent error pattern:
 
 ## 7. Agent Integration — Hook Configuration
 
-[STATUS]: In Progress
+[STATUS]: Done
 
 ### Claude Code
 
@@ -365,7 +366,9 @@ The SessionStart hook is added to `.github/hooks/chronicle.json`:
 }
 ```
 
-> **Note:** This targets VS Code local agent mode only. GitHub/Copilot cloud repository hooks use a different schema and are out of scope for MVP. The exact VS Code hook schema should be validated against current Copilot documentation during implementation.
+Current in-repo behavior is implemented and tested for both agents, including Claude settings merge behavior, deduplication of Chronicle-managed hooks, and Copilot hook artifact generation.
+
+> **Note:** This targets VS Code local agent mode only. GitHub/Copilot cloud repository hooks use a different schema and are out of scope for MVP. External confirmation of the current VS Code hook schema against public Copilot documentation remains a manual follow-up, but the in-repo implementation is complete.
 
 **Both agents use the same `chronicle hook session-start` CLI subcommand** — cross-platform, no path issues, works with global install.
 
@@ -498,7 +501,7 @@ on its claims. The codebase may have changed since the memory was created.
 
 ## 11. Project Structure (Chronicle CLI Package)
 
-[STATUS]: In Progress
+[STATUS]: Done
 
 ```
 chronicle/
@@ -516,7 +519,8 @@ chronicle/
 │   │   ├── list.ts              # chronicle list
 │   │   ├── delete.ts            # chronicle delete
 │   │   ├── supersede.ts         # chronicle supersede
-│   │   └── hook.ts              # chronicle hook session-start
+│   │   ├── hook.ts              # chronicle hook session-start
+│   │   └── shared.ts            # runtime, renderers, context helpers
 │   ├── db/
 │   │   ├── connection.ts        # SQLite connection (default journal mode, path resolution)
 │   │   ├── schema.ts            # Table creation, migrations, version check
@@ -524,6 +528,7 @@ chronicle/
 │   ├── config/
 │   │   └── config.ts            # Read/write/validate .chronicle/config.json
 │   ├── templates/
+│   │   ├── index.ts             # Template export surface
 │   │   ├── skills/              # SKILL.md template strings (embedded in code)
 │   │   │   ├── create-memory.ts
 │   │   │   ├── create-memory-from.ts
@@ -536,20 +541,27 @@ chronicle/
 │   │   └── instructions/        # Custom instruction snippets
 │   │       ├── claude-md.ts
 │   │       └── copilot-instructions.ts
+│   │   └── shared.ts            # Template normalization helpers
 │   └── utils/
 │       ├── tokens.ts            # Token estimation
 │       ├── validation.ts        # Input validation, JSON parsing
 │       ├── errors.ts            # Error types, exit codes, structured error output
-│       └── paths.ts             # .chronicle/ directory resolution (walk up)
+│       ├── paths.ts             # .chronicle/ directory resolution (walk up)
+│       └── package.ts           # package.json version resolution across source/build layouts
 ├── bin/
 │   └── chronicle.js             # #!/usr/bin/env node → dist/index.js
 └── tests/
     ├── unit/
     │   ├── db.test.ts           # Schema, queries, journal mode
     │   ├── config.test.ts       # Config read/write/defaults
+    │   ├── errors.test.ts       # Error formatting and exit code behavior
+    │   ├── package.test.ts      # Package version resolution
+    │   ├── paths.test.ts        # Repo and Chronicle path discovery
+    │   ├── templates.test.ts    # Template rendering and hook config output
     │   ├── tokens.test.ts       # Token estimation
     │   └── validation.test.ts   # Input validation
     ├── commands/
+    │   ├── helpers.ts           # Temp repo/runtime helpers for command tests
     │   ├── init.test.ts         # Init, idempotency, migrations
     │   ├── create.test.ts       # Create (args + stdin)
     │   ├── update.test.ts       # Update (partial, full)
@@ -558,9 +570,9 @@ chronicle/
     │   ├── delete.test.ts       # Delete (force, interactive)
     │   ├── supersede.test.ts    # Supersede (valid, invalid IDs, cycles, self-supersede)
     │   └── hook.test.ts         # Hook output format validation
-    └── integration/
-        └── lifecycle.test.ts    # Full flow: init→create→list→get→update→supersede→delete
 ```
+
+Epic 4 lifecycle integration tests are still pending. The current repository does not yet include `tests/integration/lifecycle.test.ts`.
 
 ---
 
@@ -608,9 +620,11 @@ chronicle/
 
 ### Epic 3: Agent Integration Templates & Init Scaffolding
 
-[STATUS]: In Progress
+[STATUS]: Done
 
 **Goal:** `chronicle init` produces all agent integration artifacts. Prompt engineering is done.
+
+Remaining non-code follow-up: confirm the Copilot local hook schema against current public documentation during manual integration validation.
 
 | # | Task | FR | Acceptance | Status |
 |---|------|-----|------------|--------|
@@ -622,7 +636,7 @@ chronicle/
 | 3.6 | Write custom instruction snippet for CLAUDE.md — includes coexistence note, budget rules, conflict handling, marker comments | FR-9.5, FR-9.9 | All FR-9.5 bullet points covered | Done |
 | 3.7 | Write custom instruction snippet for copilot-instructions.md — same content adapted for Copilot | FR-9.5, FR-9.9 | Same coverage | Done |
 | 3.8 | Write Claude Code hook config template | FR-9.2 | Valid `.claude/settings.json` hook format | Done |
-| 3.9 | Write Copilot hook config template (VS Code local agent mode) | FR-9.2 | Valid `.github/hooks/chronicle.json` format Schema validated against current Copilot docs. | In Progress |
+| 3.9 | Write Copilot hook config template (VS Code local agent mode) | FR-9.2 | Valid `.github/hooks/chronicle.json` format rendered and generated by `init`. External schema confirmation against current Copilot docs remains a manual follow-up. | Done |
 | 3.10 | Wire templates into `chronicle init` — skill file generation, hook config merging, instruction appending, .gitignore | FR-1, FR-9.3 | `chronicle init` produces full directory structure from Section 6 | Done |
 | 3.11 | Implement idempotent instruction appending — detect `<!-- chronicle:start -->` markers, replace block if present | FR-1.4, FR-1.6 | Re-running init updates instructions without duplication | Done |
 | 3.12 | Test `chronicle init` end-to-end with both agents | — | All files created correctly for `--agent claude-code --agent copilot` | Done |

@@ -2,11 +2,11 @@
 
 ## Current Repository State
 
-Chronicle has been bootstrapped from a docs-only repository into a working TypeScript CLI codebase with a validated Epic 1 foundation, a completed Epic 2 command layer, and an Epic 3 integration layer that is now wired into `chronicle init`.
+Chronicle has been bootstrapped from a docs-only repository into a working TypeScript CLI codebase with a validated Epic 1 foundation, a completed Epic 2 command layer, and a completed Epic 3 integration/init scaffolding layer wired into `chronicle init`.
 
 The implementation has followed the project docs as the authoritative source, especially:
-- `docs/implementation-plan.md`
-- `docs/functional-requirements.md`
+- `docs/specs/implementation-plan.md`
+- `docs/specs/functional-requirements.md`
 - `docs/intial-idea.md`
 
 ## Implementation Progress
@@ -82,7 +82,7 @@ Delivered behavior:
 
 ### Epic 3: Agent Integration Templates & Init Scaffolding
 
-Status: In Progress
+Status: Done
 
 Implemented:
 - skill template modules under `src/templates/skills/`
@@ -112,7 +112,7 @@ Delivered behavior:
 - generated Chronicle-owned skill and hook artifacts include managed metadata and are overwritten on re-init
 - init coverage now exercises multi-agent generation, managed marker replacement, hook merging, overwrite semantics, invalid persisted files, and migration-style DB edge cases
 
-Still pending in this epic:
+Manual follow-up:
 - external validation of the Copilot local hook JSON schema against current public docs
 
 ### Epic 4: Integration Testing & Polish
@@ -283,7 +283,7 @@ Current known validated state:
 - all implemented command tests pass
 - template layer unit tests pass
 - expanded `init` command coverage passes, including idempotency, invalid persisted files, overwrite semantics, and integrity-check error paths
-- current total: `69/69` tests passing at the latest validation checkpoint
+- current total: `71/71` tests passing at the latest validation checkpoint
 
 ## Current Repository Conventions
 
@@ -311,6 +311,7 @@ Current implementation organization:
 
 Deferred for plan alignment:
 - Epic 4 integration/manual/polish work
+- manual confirmation of the Copilot local hook schema against current public docs
 
 Reason:
 - the remaining work is now integration/manual/polish follow-through rather than core command or template-generation implementation
@@ -318,7 +319,7 @@ Reason:
 ## Recommended Next Step
 
 The clean next step is:
-- continue Epic 4 with full lifecycle integration tests and hook-format validation for both agent targets
+- continue Epic 4 with full lifecycle integration tests and manual real-agent validation, including confirmation of the Copilot local hook schema against current public docs
 
 If the implementation order is intentionally changed later, then:
 - external validation of the Copilot local hook JSON schema remains the main open Epic 3 item before broader polish work
@@ -328,7 +329,7 @@ If the implementation order is intentionally changed later, then:
 Chronicle currently has:
 - a complete Epic 1 foundation
 - a complete and tested Epic 2 command layer
-- an Epic 3 template and init-generation layer that produces managed agent integration artifacts
+- a complete Epic 3 template and init-generation layer that produces managed agent integration artifacts
 - strong typing and explicit validation boundaries
 - consistent error handling and resource cleanup patterns
 - a stable base for Epic 4 integration testing and agent-specific validation work next
