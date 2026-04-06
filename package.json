@@ -1,7 +1,29 @@
 {
   "name": "chronicle-memory",
-  "version": "1.0.0",
+  "version": "0.0.1-alpha",
   "description": "Project-scoped local memory layer for coding agents.",
+  "license": "Apache-2.0",
+  "author": "dpenev98",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dpenev98/chronicle.git"
+  },
+  "homepage": "https://github.com/dpenev98/chronicle#readme",
+  "bugs": {
+    "url": "https://github.com/dpenev98/chronicle/issues"
+  },
+  "keywords": [
+    "chronicle",
+    "memory",
+    "coding-agents",
+    "ai",
+    "cli",
+    "sqlite",
+    "copilot",
+    "claude",
+    "context",
+    "local-memory"
+  ],
   "bin": {
     "chronicle": "bin/chronicle.js"
   },
@@ -18,7 +40,12 @@
     "build": "tsup",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run typecheck && npm run build && npm test",
+    "version:pre": "npm version prerelease --preid=alpha",
+    "version:patch": "npm version patch",
+    "version:minor": "npm version minor",
+    "version:major": "npm version major"
   },
   "dependencies": {
     "better-sqlite3": "^11.10.0",

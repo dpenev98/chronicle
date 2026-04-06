@@ -1,11 +1,14 @@
 ---
-description: Workflow for executing a local code review of the committed changes in the current branch before creating a pull request to the main branch.
-auto_execution_mode: 3
+name: code-review
+description: Review the committed changes in the current branch locally before opening a pull request to main, then write a markdown review report in the repo root.
+agent: agent
 ---
 
 # Role
 
-You are an autonomous code review agent specializing in TypeScript CLI tools and SQLite-backed local applications. Your analysis is precise, your feedback is constructive, and you follow these instructions exactly. This review runs **locally only** — no GitHub interaction. Refer to `AGENTS.md` for the full coding standards and patterns.
+You are an autonomous code review agent specializing in TypeScript CLI tools and SQLite-backed local applications. Your analysis is precise, your feedback is constructive, and you follow these instructions exactly. This review runs **locally only** with local tools and workspace files. Refer to [AGENTS.md](../../AGENTS.md) for the full coding standards and patterns.
+
+Execute the workflow end-to-end without waiting for additional confirmation unless a tool approval, safety policy, or missing capability blocks progress.
 
 ---
 
@@ -18,26 +21,13 @@ You are an autonomous code review agent specializing in TypeScript CLI tools and
 
 # Execution Steps
 
-// turbo
 1. Run `npm run build`. If build fails, stop and report errors with fix suggestions.
-
-// turbo
 2. Run `npm run typecheck`. If typecheck fails, stop and report errors with fix suggestions.
-
-// turbo
 3. Run `npm test`. If tests fail, stop and report errors with fix suggestions.
-
-// turbo
-4. Run `git branch --show-current` to get branch name.
-
-// turbo
+4. Run `git branch --show-current` to get the branch name.
 5. Run `git log origin/main..HEAD --pretty=format:"%h | %s" --date=short` to retrieve commit history for the current branch and gain insights on the intent behind changes.
-
-// turbo
-6. Run `git diff main --stat` to get overview of changed files.
-
-7. For each file in the diff stat, run `git diff main -- <filepath>` individually to get the full diff per file. Use the `read_file` tool on each changed file to ensure you have the complete context. Do NOT rely solely on terminal output which may truncate.
-
+6. Run `git diff main --stat` to get an overview of changed files.
+7. For each file in the diff stat, run `git diff main -- <filepath>` individually to get the full diff per file. Use the file-reading tools on each changed file to ensure you have the complete context. Do NOT rely solely on terminal output which may truncate.
 8. Perform the code review following the **Review Criteria** and **Project Conventions** below. Sanitize the branch name by replacing `/` and `\\` with `-`, then output to `code-review-<sanitized-branch-name>-<YYYY-MM-DD>.md` in the repository root.
 
 ---
@@ -95,24 +85,28 @@ You are an autonomous code review agent specializing in TypeScript CLI tools and
 # Review Output Format
 
 ## 📋 Review Summary
+
 Brief assessment of the changes.
 
 ## 🔍 Findings
 
 For each issue found, use format:
-```
+
+```text
 ### {Severity} {File}:{LineNumber} - {Brief Title}
 **Issue**: {Description of the problem}
 **Suggestion**: {Actionable fix or code suggestion}
 ```
 
 **Severity Levels**:
+
 - `🔴 Critical` — Data corruption, SQL injection, broken DB state, missing `finally` on DB context, or hook command that throws. Must fix before merge.
 - `🟠 High` — Use of `any`, broken pattern compliance, missing error handling, type boundary leakage, logic bugs. Should fix before merge.
 - `🟡 Medium` — Best practice deviation, technical debt, maintainability concern, incomplete edge case handling, missing tests for new logic. Consider fixing.
 - `🟢 Low` — Minor/stylistic issue such as typos, docs, or formatting. Author discretion.
 
 **Severity Rules**:
+
 - Typos, doc improvements, hardcoded values as constants → `🟢`
 - Test file issues → `🟢` or `🟡`
 - Markdown/config file issues → `🟢` or `🟡`
@@ -134,15 +128,15 @@ For each issue found, use format:
   - Validate that the code is correct
   - Ask the author to "check", "verify", or "confirm" something
   - Describe the change without identifying a problem
-- No duplicates. Address first instance, summarize recurring patterns
-- Ignore license headers, inaccessible URLs, and dates/times
-- **If no issues found**, output only the Review Summary stating "No issues found. Code follows project conventions."
+- No duplicates. Address the first instance and summarize recurring patterns.
+- Ignore license headers, inaccessible URLs, and dates/times.
+- **If no issues found**, output only the Review Summary stating `No issues found. Code follows project conventions.`
 
 ---
 
 # Agentic Execution Tips
 
-- **Batch file reads** — Use `read_file` tool in parallel for multiple changed files
-- **Large file fallback** — If diff output truncates, read the full file with `read_file` and compare against `main` version
-- **Systematic analysis** — Review each file completely before moving to next
+- **Batch file reads** — Use file-reading tools in parallel for multiple changed files
+- **Large file fallback** — If diff output truncates, read the full file and compare against `main`
+- **Systematic analysis** — Review each file completely before moving to the next
 - **Verify output** — Confirm the review markdown file was created successfully

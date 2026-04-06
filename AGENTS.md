@@ -27,6 +27,7 @@ npm run typecheck    # Run TypeScript type checking (tsc --noEmit)
 npm run build        # Build with tsup → outputs to dist/
 npm test             # Run full test suite with vitest
 npm run test:watch   # Run tests in watch mode
+npm pack --dry-run   # Verify tarball contents before publishing
 ```
 
 The CLI entry point is `bin/chronicle.js` which requires `dist/index.js`. You must run `npm run build` before using the CLI directly.
@@ -49,8 +50,10 @@ chronicle/
 │   ├── unit/                 # Unit tests (utilities, DB modules, template renderers)
 │   ├── commands/             # Command tests + helpers.ts (test runtime, repo seeding)
 │   └── integration/          # Registered-CLI lifecycle and cross-command integration tests
+├── .github/workflows/        # CI (test matrix) and CD (npm publish) pipelines
 ├── docs/specs/               # FR spec, implementation plan, STATUS, gap analysis
-└── docs/architecture.md      # Architectural patterns (evolving)
+├── docs/architecture.md      # Architectural patterns (evolving)
+└── docs/operations.md        # CI/CD, versioning, and release workflow
 ```
 
 **Key files to know:**
