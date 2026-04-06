@@ -10,14 +10,17 @@ export interface OpenDatabaseOptions {
 }
 
 export function openDatabase(dbPath: string, options: OpenDatabaseOptions = {}): DatabaseConnection {
+  let db: Database.Database | null = null;
+
   try {
     mkdirSync(dirname(dbPath), { recursive: true });
-    const db = new Database(dbPath, { fileMustExist: options.fileMustExist ?? false });
+    db = new Database(dbPath, { fileMustExist: options.fileMustExist ?? false });
 
     db.pragma('journal_mode = DELETE');
 
     return db;
   } catch (error) {
+    db?.close();
     throw new DatabaseError(`Failed to open database at ${dbPath}.`, error);
   }
 }
