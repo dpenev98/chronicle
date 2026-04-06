@@ -1,6 +1,6 @@
 # Chronicle
 
-> **Status**: This project is still in early stage development and is not yet ready for **any** use. Key features are not yet implemented. Refer to [implementation plan](./docs/specs/implementation-plan.md) for the planned features and [STATUS.md](./docs/specs/STATUS.md) for the current progress.
+> **Status**: This project is still in early stage development and is not yet ready for production use. The core CLI command set is implemented, including `chronicle init`, but Epic 3/4 validation and polish work is still in progress. Refer to [implementation plan](./docs/specs/implementation-plan.md) for the planned work and [STATUS.md](./docs/specs/STATUS.md) for the current progress.
 
 Chronicle is a **project-scoped, local memory layer for coding agents**.
 
@@ -63,7 +63,7 @@ The CLI entry point is `bin/chronicle.js` which requires `dist/index.js`. Build 
 | `chronicle delete <id>` | Delete a memory (with confirmation / `--force`) |
 | `chronicle supersede <old> <new>` | Mark a memory as superseded |
 | `chronicle hook session-start` | Emit session start payload for agent hooks |
-| `chronicle init` | Initialize Chronicle in a repository *(not yet implemented)* |
+| `chronicle init` | Initialize Chronicle in a repository, generate agent integration artifacts, and update managed files idempotently |
 
 ## Technology Stack
 
@@ -86,7 +86,7 @@ chronicle/
 ├── src/
 │   ├── index.ts          # Commander program setup + command registration
 │   ├── commands/         # One file per command + shared runtime helpers
-│   ├── templates/        # Skill, instruction, and hook template renderers for future init generation
+│   ├── templates/        # Skill, instruction, and hook template renderers consumed by chronicle init
 │   ├── db/               # SQLite connection, schema, prepared-statement queries
 │   ├── config/           # .chronicle/config.json read/write/validation
 │   └── utils/            # Tokens, validation, errors, path resolution

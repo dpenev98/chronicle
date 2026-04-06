@@ -41,7 +41,7 @@ chronicle/
 ├── src/
 │   ├── index.ts              # CLI entrypoint (Commander setup + command registration)
 │   ├── commands/             # One file per command + shared.ts for runtime/helpers
-│   ├── templates/            # Skill, instruction, and hook template renderers for future init generation
+│   ├── templates/            # Skill, instruction, and hook template renderers consumed by chronicle init
 │   ├── db/                   # SQLite connection, schema, prepared-statement queries
 │   ├── config/               # .chronicle/config.json read/write/validation
 │   └── utils/                # tokens, validation, errors, paths
@@ -58,7 +58,7 @@ chronicle/
 - `src/templates/shared.ts` — Template rendering primitives and agent-specific formatting boundary
 - `src/templates/skills/index.ts` — Canonical skill template manifest for both supported agents
 - `src/utils/errors.ts` — Error hierarchy (`ChronicleError` subclasses) and exit codes
-- `tests/commands/helpers.ts` — `createTestRuntime()`, `createInitializedRepo()`, `seedMemory()`
+- `tests/commands/helpers.ts` — `createGitRepo()`, `createInitializedRepo()`, `createTestRuntime()`, `seedMemory()`
 
 ---
 
@@ -140,7 +140,7 @@ Agent integration artifacts are generated through typed renderers in `src/templa
 ## Testing
 
 - **Vitest.** Run `npm test`. Tests call `executeXxxCommand()` directly — never shell out.
-- **Test infra** in `tests/commands/helpers.ts`: `createInitializedRepo()`, `seedMemory()`, `createTestRuntime()`.
+- **Test infra** in `tests/commands/helpers.ts`: `createGitRepo()`, `createInitializedRepo()`, `seedMemory()`, `createTestRuntime()`.
 - **Temp dirs** cleaned in `afterEach` via the `repos` array pattern.
 - **Every new command** → `tests/commands/<name>.test.ts`. Every new utility → `tests/unit/<name>.test.ts`.
 - **Template renderers** should be validated in `tests/unit/templates.test.ts` or a neighboring focused unit test file.

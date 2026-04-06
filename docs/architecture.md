@@ -45,7 +45,7 @@ src/commands/*.ts             Command layer — one file per command
   ↓
 src/commands/shared.ts        Runtime abstraction — I/O, time, IDs, context helpers
   ↓
-src/templates/*               Artifact template layer — skills, instructions, hook configs for future init generation
+src/templates/*               Artifact template layer — skills, instructions, hook configs consumed by chronicle init
   ↓
 src/utils/ + src/config/      Validation, error model, config, path resolution
   ↓
@@ -101,8 +101,8 @@ Agent integration artifacts are represented as typed renderer functions instead 
 This allows Chronicle to:
 
 - centralize agent-specific differences at the template boundary
-- unit-test template output before `init` exists
-- keep future `chronicle init` focused on filesystem writes and merge rules rather than string construction
+- unit-test template output independently from `chronicle init` filesystem behavior
+- keep `chronicle init` focused on filesystem writes and merge rules rather than string construction
 
 One concrete example is the skill layer:
 
@@ -139,9 +139,9 @@ CLI args / stdin JSON
 
 ## Template Generation Flow
 
-The current template layer is a precursor to `chronicle init`.
+The current template layer is the generation boundary used by `chronicle init`.
 
-Its intended future flow is:
+Its current flow is:
 
 ```text
 chronicle init
@@ -152,7 +152,7 @@ chronicle init
   -> preserve user-owned content where required
 ```
 
-Current implementation stops at the rendering boundary. The remaining work is the file-generation and merge orchestration.
+Implemented behaviors now include marker-based instruction replacement, structural Claude settings merge, Chronicle-owned artifact overwrites with managed metadata, and DB integrity/schema checks before reusing an existing Chronicle installation.
 
 ---
 
