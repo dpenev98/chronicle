@@ -34,8 +34,24 @@ export interface TestRuntime extends CommandRuntime {
   stdoutBuffer: string;
 }
 
-export function createInitializedRepo(configOverrides: Partial<ChronicleConfig> = {}): TestRepo {
+export function createGitRepo(): TestRepo {
   const repoRoot = mkdtempSync(join(tmpdir(), 'chronicle-command-'));
+
+  mkdirSync(join(repoRoot, '.git'), { recursive: true });
+
+  return {
+    cleanup(): void {
+      rmSync(repoRoot, { recursive: true, force: true });
+    },
+    configPath: join(repoRoot, '.chronicle', 'config.json'),
+    dbPath: join(repoRoot, '.chronicle', 'chronicle.db'),
+    repoRoot,
+  };
+}
+
+export function createInitializedRepo(configOverrides: Partial<ChronicleConfig> = {}): TestRepo {
+  const repo = createGitRepo();
+  const repoRoot = repo.repoRoot;
   const chronicleDir = join(repoRoot, '.chronicle');
   const dbPath = join(chronicleDir, 'chronicle.db');
   const configPath = join(chronicleDir, 'config.json');
@@ -49,7 +65,7 @@ export function createInitializedRepo(configOverrides: Partial<ChronicleConfig> 
 
   return {
     cleanup(): void {
-      rmSync(repoRoot, { recursive: true, force: true });
+      repo.cleanup();
     },
     configPath,
     dbPath,

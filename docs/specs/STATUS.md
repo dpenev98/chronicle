@@ -2,7 +2,7 @@
 
 ## Current Repository State
 
-Chronicle has been bootstrapped from a docs-only repository into a working TypeScript CLI codebase with a validated Epic 1 foundation, a mostly completed Epic 2 command layer, and a newly implemented Epic 3 template layer.
+Chronicle has been bootstrapped from a docs-only repository into a working TypeScript CLI codebase with a validated Epic 1 foundation, a completed Epic 2 command layer, and an Epic 3 integration layer that is now wired into `chronicle init`.
 
 The implementation has followed the project docs as the authoritative source, especially:
 - `docs/implementation-plan.md`
@@ -47,9 +47,10 @@ Delivered behavior:
 
 ### Epic 2: CLI Commands
 
-Status: In Progress
+Status: Done
 
 Implemented:
+- `chronicle init`
 - `chronicle create`
 - `chronicle update`
 - `chronicle get`
@@ -58,14 +59,16 @@ Implemented:
 - `chronicle supersede`
 - `chronicle hook session-start`
 
-Not yet implemented:
-- `chronicle init`
-
 Also implemented:
 - Shared command runtime and helpers in `src/commands/shared.ts`
 - Command-level tests in `tests/commands/*.test.ts`
 
 Delivered behavior:
+- Init supports Git repo root discovery from nested directories
+- Init creates or reuses `.chronicle/`, verifies DB integrity on re-run, applies schema initialization/migration steps, refreshes `chronicleVersion`, and preserves existing memories
+- Init updates `.gitignore` idempotently for rollback journal transient files
+- Init generates Claude and Copilot managed artifacts from the template layer
+- Init structurally merges `.claude/settings.json`, replaces Chronicle marker blocks in instruction files, and overwrites Chronicle-owned skill/hook artifacts with managed headers/metadata
 - Create supports args mode and `--stdin`
 - Update supports partial updates and `--stdin`
 - Get returns the full memory payload
@@ -105,12 +108,12 @@ Delivered behavior:
 - the `/recall` prompt instructs the agent to respect retrieval budgets and confirmation thresholds from `.chronicle/config.json`
 - custom instruction snippets render with idempotent `<!-- chronicle:start -->` markers and config-derived budget values
 - hook templates render the shared `chronicle hook session-start` command for both agents
+- `chronicle init` now wires the template layer into real filesystem generation for both Claude and Copilot
+- generated Chronicle-owned skill and hook artifacts include managed metadata and are overwritten on re-init
+- init coverage now exercises multi-agent generation, managed marker replacement, hook merging, overwrite semantics, invalid persisted files, and migration-style DB edge cases
 
 Still pending in this epic:
 - external validation of the Copilot local hook JSON schema against current public docs
-- wiring templates into `chronicle init`
-- idempotent file generation and merge behavior inside `init`
-- end-to-end `init` tests
 
 ### Epic 4: Integration Testing & Polish
 
@@ -124,8 +127,8 @@ The repo docs are treated as the source of truth for scope and sequencing.
 
 Practical outcome:
 - Epic 1 was completed first
-- Epic 2 was partially completed
-- the template layer was built before `chronicle init` so `init` can later generate real managed artifacts instead of placeholder files
+- Epic 2 is now complete
+- the template layer was built before `chronicle init` and is now the generation boundary used by `init` for managed artifacts
 
 ### 2. Keep the CLI strongly typed and modular
 
@@ -184,9 +187,9 @@ Practical outcome:
 The Epic 3 template layer was implemented as typed renderer functions rather than static files copied directly into the repo.
 
 Practical outcome:
-- `chronicle init` can later choose agent-specific formats at generation time
+- `chronicle init` now chooses agent-specific formats at generation time
 - Copilot-specific frontmatter behavior is centralized instead of duplicated
-- instruction blocks and hook configs can be tested before `init` exists
+- instruction blocks and hook configs remain testable independently from filesystem writes
 
 ## Established Patterns
 
@@ -255,6 +258,18 @@ Resolution:
 - list format handling was tightened
 - hook execution was adjusted to always return safe output and always close resources
 
+### Init migration and managed-artifact edge cases
+
+Issue:
+- `chronicle init` initially lacked an explicit SQLite integrity verification step for existing databases
+- Chronicle-owned generated artifacts did not include managed metadata
+- schema version detection failed on valid SQLite databases that existed before the `schema_version` table was initialized
+
+Resolution:
+- init now runs `PRAGMA integrity_check` before reusing an existing Chronicle database
+- Chronicle-owned skills and Copilot hook JSON now include managed headers/metadata
+- `getCurrentSchemaVersion()` now returns `0` when the `schema_version` table is absent, allowing init to treat that state as a migration/setup path instead of failing
+
 ## Validation Status
 
 The current codebase has been validated with:
@@ -267,7 +282,8 @@ Current known validated state:
 - all implemented unit tests pass
 - all implemented command tests pass
 - template layer unit tests pass
-- current total: `52/52` tests passing at the last validation checkpoint
+- expanded `init` command coverage passes, including idempotency, invalid persisted files, overwrite semantics, and integrity-check error paths
+- current total: `69/69` tests passing at the latest validation checkpoint
 
 ## Current Repository Conventions
 
@@ -294,26 +310,25 @@ Current implementation organization:
 ## What Is Intentionally Deferred Right Now
 
 Deferred for plan alignment:
-- `chronicle init`
 - Epic 4 integration/manual/polish work
 
 Reason:
-- the implementation plan requires `chronicle init` to generate managed artifacts idempotently, so the remaining work is now the generation and merge layer rather than the template content itself
+- the remaining work is now integration/manual/polish follow-through rather than core command or template-generation implementation
 
 ## Recommended Next Step
 
 The clean next step is:
-- implement `chronicle init` plus its artifact-writing and merge helpers using the new template layer
+- continue Epic 4 with full lifecycle integration tests and hook-format validation for both agent targets
 
 If the implementation order is intentionally changed later, then:
-- `chronicle init` can be implemented directly before Epic 3, but that would be a deliberate deviation from the current plan dependency order
+- external validation of the Copilot local hook JSON schema remains the main open Epic 3 item before broader polish work
 
 ## Summary
 
 Chronicle currently has:
 - a complete Epic 1 foundation
-- a tested partial Epic 2 command layer
-- a tested Epic 3 template layer for skills, custom instructions, and hook configs
+- a complete and tested Epic 2 command layer
+- an Epic 3 template and init-generation layer that produces managed agent integration artifacts
 - strong typing and explicit validation boundaries
 - consistent error handling and resource cleanup patterns
-- a stable base for implementing `chronicle init` and its managed artifact generation flow next
+- a stable base for Epic 4 integration testing and agent-specific validation work next

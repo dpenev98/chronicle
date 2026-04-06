@@ -113,7 +113,7 @@ INSERT OR IGNORE INTO schema_version (version, applied_at)
 
 ## 4. CLI Commands
 
-[STATUS]: In Progress
+[STATUS]: Done
 
 ### 4.1 `chronicle init`
 
@@ -144,7 +144,8 @@ chronicle init [--agent claude-code] [--agent copilot]
 
 **Exit codes:**
 - `0`: Success
-- `1`: Error (with structured JSON error on stderr)
+- `1`: User error (with structured JSON error on stderr)
+- `2`: System error (database integrity, SQLite, filesystem)
 
 ### 4.2 `chronicle create`
 
@@ -277,7 +278,7 @@ All CLI commands follow a consistent error pattern:
 
 ## 6. Repo Directory Structure Created by `chronicle init`
 
-[STATUS]: Not Started
+[STATUS]: Done
 
 ```
 <repo-root>/
@@ -311,7 +312,8 @@ All CLI commands follow a consistent error pattern:
 │   │   │   └── SKILL.md
 │   │   └── recall/
 │   │       └── SKILL.md
-│   └── settings.json           ← Hook config (merged, not overwritten)
+│   └── hooks/
+│       └── chronicle.json      ← Hook config (Chronicle-managed, overwritten)
 │
 ├── CLAUDE.md                   ← Chronicle section appended (if claude-code)
 ├── .github/copilot-instructions.md  ← Chronicle section appended (if copilot)
@@ -588,13 +590,13 @@ chronicle/
 
 ### Epic 2: CLI Commands
 
-[STATUS]: In Progress
+[STATUS]: Done
 
 **Goal:** All 8 CLI commands wired up and working.
 
 | # | Task | FR | Acceptance | Status |
 |---|------|-----|------------|--------|
-| 2.1 | Implement `chronicle init` — create .chronicle/, DB, config, .gitignore entries. Idempotent. | FR-1 | Running twice doesn't destroy data. .gitignore updated. | Not Started |
+| 2.1 | Implement `chronicle init` — create .chronicle/, DB, config, .gitignore entries. Idempotent. | FR-1 | Running twice doesn't destroy data. .gitignore updated. | Done |
 | 2.2 | Implement `chronicle create` — args mode + `--stdin` mode. Validate, compute tokens, insert, return ID. | FR-2 | Both input modes work. Token limit enforced. | Done |
 | 2.3 | Implement `chronicle update <id>` — partial updates, --stdin mode. | FR-4 | Partial update preserves unchanged fields. | Done |
 | 2.4 | Implement `chronicle get <id>` — return full JSON. | FR-7 | Found → JSON. Not found → exit 1 + error. | Done |
@@ -621,9 +623,9 @@ chronicle/
 | 3.7 | Write custom instruction snippet for copilot-instructions.md — same content adapted for Copilot | FR-9.5, FR-9.9 | Same coverage | Done |
 | 3.8 | Write Claude Code hook config template | FR-9.2 | Valid `.claude/settings.json` hook format | Done |
 | 3.9 | Write Copilot hook config template (VS Code local agent mode) | FR-9.2 | Valid `.github/hooks/chronicle.json` format Schema validated against current Copilot docs. | In Progress |
-| 3.10 | Wire templates into `chronicle init` — skill file generation, hook config merging, instruction appending, .gitignore | FR-1, FR-9.3 | `chronicle init` produces full directory structure from Section 6 | Not Started |
-| 3.11 | Implement idempotent instruction appending — detect `<!-- chronicle:start -->` markers, replace block if present | FR-1.4, FR-1.6 | Re-running init updates instructions without duplication | Not Started |
-| 3.12 | Test `chronicle init` end-to-end with both agents | — | All files created correctly for `--agent claude-code --agent copilot` | Not Started |
+| 3.10 | Wire templates into `chronicle init` — skill file generation, hook config merging, instruction appending, .gitignore | FR-1, FR-9.3 | `chronicle init` produces full directory structure from Section 6 | Done |
+| 3.11 | Implement idempotent instruction appending — detect `<!-- chronicle:start -->` markers, replace block if present | FR-1.4, FR-1.6 | Re-running init updates instructions without duplication | Done |
+| 3.12 | Test `chronicle init` end-to-end with both agents | — | All files created correctly for `--agent claude-code --agent copilot` | Done |
 
 ### Epic 4: Integration Testing & Polish
 

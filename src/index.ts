@@ -1,21 +1,14 @@
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { Command } from 'commander';
 import { registerCreateCommand } from './commands/create';
 import { registerDeleteCommand } from './commands/delete';
 import { registerGetCommand } from './commands/get';
 import { registerHookCommand } from './commands/hook';
+import { registerInitCommand } from './commands/init';
 import { registerListCommand } from './commands/list';
 import { createNodeCommandRuntime } from './commands/shared';
 import { registerSupersedeCommand } from './commands/supersede';
 import { registerUpdateCommand } from './commands/update';
-
-function readPackageVersion(): string {
-  const packageJsonPath = resolve(__dirname, '..', 'package.json');
-  const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8')) as { version?: string };
-
-  return packageJson.version ?? '0.0.0';
-}
+import { readPackageVersion } from './utils/package';
 
 export function createProgram(): Command {
   const program = new Command()
@@ -26,6 +19,7 @@ export function createProgram(): Command {
   const runtime = createNodeCommandRuntime();
 
   registerCreateCommand(program, runtime);
+  registerInitCommand(program, runtime);
   registerUpdateCommand(program, runtime);
   registerGetCommand(program, runtime);
   registerListCommand(program, runtime);
