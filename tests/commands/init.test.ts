@@ -326,6 +326,58 @@ describe('init command', () => {
     expect(mergedClaudeSettings.hooks.SessionStart[0]?.hooks[0]?.type).toBe('command');
   });
 
+  it('preserves unrelated hooks inside a mixed Chronicle claude SessionStart entry', () => {
+    const repo = makeGitRepo();
+    const claudeSettingsPath = join(repo.repoRoot, '.claude', 'settings.json');
+
+    mkdirSync(join(repo.repoRoot, '.claude'), { recursive: true });
+    writeFileSync(
+      claudeSettingsPath,
+      `${JSON.stringify({
+        hooks: {
+          SessionStart: [
+            {
+              hooks: [
+                {
+                  command: 'chronicle hook session-start',
+                  timeout: 1,
+                  type: 'command',
+                },
+                {
+                  command: 'echo keep-existing',
+                  timeout: 1000,
+                  type: 'command',
+                },
+              ],
+              matcher: 'startup',
+            },
+          ],
+        },
+      }, null, 2)}\n`,
+      'utf8',
+    );
+
+    executeInitCommand({}, createTestRuntime({ cwd: repo.repoRoot }));
+
+    const mergedClaudeSettings = JSON.parse(readFileSync(claudeSettingsPath, 'utf8')) as {
+      hooks: {
+        SessionStart: Array<{
+          hooks: Array<{ command: string; timeout: number; type: string }>;
+          matcher: string;
+        }>;
+      };
+    };
+
+    expect(mergedClaudeSettings.hooks.SessionStart).toHaveLength(1);
+    expect(mergedClaudeSettings.hooks.SessionStart[0]?.hooks).toHaveLength(2);
+    expect(mergedClaudeSettings.hooks.SessionStart[0]?.hooks[0]?.command).toBe('chronicle hook session-start');
+    expect(mergedClaudeSettings.hooks.SessionStart[0]?.hooks[0]?.timeout).toBe(5000);
+    expect(mergedClaudeSettings.hooks.SessionStart[0]?.hooks[0]?.type).toBe('command');
+    expect(mergedClaudeSettings.hooks.SessionStart[0]?.hooks[1]?.command).toBe('echo keep-existing');
+    expect(mergedClaudeSettings.hooks.SessionStart[0]?.hooks[1]?.timeout).toBe(1000);
+    expect(mergedClaudeSettings.hooks.SessionStart[0]?.hooks[1]?.type).toBe('command');
+  });
+
   it('rejects non-ok integrity check results', () => {
     expect(() => verifyDatabaseIntegrity({
       prepare(): { all(): unknown[] } {

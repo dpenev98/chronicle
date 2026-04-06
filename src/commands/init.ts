@@ -1,5 +1,5 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { resolve, join, dirname } from 'node:path';
+import { join, dirname } from 'node:path';
 import type { Command } from 'commander';
 import { readConfig, validateConfig } from '../config/config';
 import { openDatabase } from '../db/connection';
@@ -12,7 +12,8 @@ import {
   renderCopilotInstructions,
   type SupportedAgent,
 } from '../templates';
-import { ConfigError, DatabaseError, RepositoryError, ValidationError } from '../utils/errors';
+import { DatabaseError, RepositoryError, ValidationError } from '../utils/errors';
+import { readPackageVersion } from '../utils/package';
 import { buildChroniclePaths, findRepoRoot } from '../utils/paths';
 import { ensureObject, parseJsonObject } from '../utils/validation';
 import { runRegisteredCommand, type CommandRuntime, writeJson } from './shared';
@@ -41,17 +42,6 @@ export interface IntegrityCheckConnection {
   prepare(sql: string): {
     all(): unknown[];
   };
-}
-
-function readPackageVersion(): string {
-  const packageJsonPath = resolve(__dirname, '..', '..', 'package.json');
-  const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8')) as { version?: string };
-
-  if (typeof packageJson.version !== 'string' || !packageJson.version.trim()) {
-    throw new ConfigError('package.json version must be a non-empty string.');
-  }
-
-  return packageJson.version;
 }
 
 function normalizeAgents(agentOptions: string[] | undefined): SupportedAgent[] {
@@ -228,25 +218,60 @@ function ensureGitignoreEntry(gitignorePath: string): FileChangeState {
   return 'updated';
 }
 
-function isChronicleClaudeSessionStartEntry(value: unknown): boolean {
+function isChronicleClaudeHook(value: unknown): boolean {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
     return false;
   }
 
-  const entry = ensureObject(value, 'Claude settings SessionStart entry');
+  const hookObject = ensureObject(value, 'Claude settings hook entry');
+  return hookObject.command === 'chronicle hook session-start';
+}
 
-  if (entry.matcher !== 'startup' || !Array.isArray(entry.hooks)) {
-    return false;
+function mergeClaudeSessionStartEntry(entry: unknown, desiredHook: unknown, preserveChronicleHook: boolean): {
+  entry: unknown | null;
+  foundChronicleHook: boolean;
+} {
+  if (typeof entry !== 'object' || entry === null || Array.isArray(entry)) {
+    return { entry, foundChronicleHook: false };
   }
 
-  return entry.hooks.some((hook) => {
-    if (typeof hook !== 'object' || hook === null || Array.isArray(hook)) {
-      return false;
+  const entryObject = ensureObject(entry, 'Claude settings SessionStart entry');
+
+  if (entryObject.matcher !== 'startup' || !Array.isArray(entryObject.hooks)) {
+    return { entry, foundChronicleHook: false };
+  }
+
+  const mergedHooks: unknown[] = [];
+  let foundChronicleHook = false;
+
+  for (const hook of entryObject.hooks) {
+    if (isChronicleClaudeHook(hook)) {
+      if (preserveChronicleHook && !foundChronicleHook) {
+        mergedHooks.push(desiredHook);
+      }
+
+      foundChronicleHook = true;
+      continue;
     }
 
-    const hookObject = ensureObject(hook, 'Claude settings hook entry');
-    return hookObject.command === 'chronicle hook session-start';
-  });
+    mergedHooks.push(hook);
+  }
+
+  if (!foundChronicleHook) {
+    return { entry, foundChronicleHook: false };
+  }
+
+  if (mergedHooks.length === 0) {
+    return { entry: null, foundChronicleHook: true };
+  }
+
+  return {
+    entry: {
+      ...entryObject,
+      hooks: mergedHooks,
+    },
+    foundChronicleHook: true,
+  };
 }
 
 function renderMergedClaudeSettings(existingContent: string | null): string {
@@ -255,27 +280,27 @@ function renderMergedClaudeSettings(existingContent: string | null): string {
   const hooksObject = hooksValue === undefined ? {} : ensureObject(hooksValue, 'Claude settings hooks');
   const sessionStartValue = hooksObject.SessionStart;
   const desiredEntry = createClaudeCodeHookConfig().hooks.SessionStart[0];
+  const desiredHook = desiredEntry.hooks[0];
   const mergedEntries: unknown[] = [];
-  let foundChronicleEntry = false;
+  let foundChronicleHook = false;
 
   if (sessionStartValue !== undefined && !Array.isArray(sessionStartValue)) {
     throw new ValidationError('Claude settings hooks.SessionStart must be an array.');
   }
 
   for (const entry of sessionStartValue ?? []) {
-    if (isChronicleClaudeSessionStartEntry(entry)) {
-      if (!foundChronicleEntry) {
-        mergedEntries.push(desiredEntry);
-        foundChronicleEntry = true;
-      }
+    const mergedEntry = mergeClaudeSessionStartEntry(entry, desiredHook, !foundChronicleHook);
 
-      continue;
+    if (mergedEntry.foundChronicleHook) {
+      foundChronicleHook = true;
     }
 
-    mergedEntries.push(entry);
+    if (mergedEntry.entry !== null) {
+      mergedEntries.push(mergedEntry.entry);
+    }
   }
 
-  if (!foundChronicleEntry) {
+  if (!foundChronicleHook) {
     mergedEntries.push(desiredEntry);
   }
 
