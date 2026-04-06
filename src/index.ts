@@ -5,6 +5,7 @@ import { registerCreateCommand } from './commands/create';
 import { registerDeleteCommand } from './commands/delete';
 import { registerGetCommand } from './commands/get';
 import { registerHookCommand } from './commands/hook';
+import { registerInitCommand } from './commands/init';
 import { registerListCommand } from './commands/list';
 import { createNodeCommandRuntime } from './commands/shared';
 import { registerSupersedeCommand } from './commands/supersede';
@@ -26,6 +27,7 @@ export function createProgram(): Command {
   const runtime = createNodeCommandRuntime();
 
   registerCreateCommand(program, runtime);
+  registerInitCommand(program, runtime);
   registerUpdateCommand(program, runtime);
   registerGetCommand(program, runtime);
   registerListCommand(program, runtime);

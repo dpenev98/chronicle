@@ -49,6 +49,14 @@ export function initializeSchema(db: DatabaseConnection): void {
 
 export function getCurrentSchemaVersion(db: DatabaseConnection): number {
   try {
+    const schemaVersionTable = db
+      .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?")
+      .get('schema_version') as { name: string } | undefined;
+
+    if (!schemaVersionTable) {
+      return 0;
+    }
+
     const row = db
       .prepare('SELECT version FROM schema_version ORDER BY version DESC LIMIT 1')
       .get() as { version: number } | undefined;
