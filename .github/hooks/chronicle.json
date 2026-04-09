@@ -1,0 +1,12 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "type": "command",
+        "command": "chronicle hook session-start",
+        "timeout": 5000
+      }
+    ]
+  },
+  "$comment": "This file is managed by Chronicle. Re-running `chronicle init` may overwrite local changes."
+}

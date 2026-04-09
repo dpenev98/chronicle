@@ -1,0 +1,8 @@
+{
+  "maxMemoriesToPull": 5,
+  "maxMemorySummaryTokens": 2000,
+  "maxRetrievalTokenBudget": 5000,
+  "requireConfirmationAbove": 3,
+  "maxCatalogEntries": 20,
+  "chronicleVersion": "0.0.1-alpha"
+}
