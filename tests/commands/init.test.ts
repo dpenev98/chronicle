@@ -231,6 +231,27 @@ describe('init command', () => {
     expect(mergedClaudeSettings.hooks.SessionStart[1]?.hooks[0]?.command).toBe('chronicle hook session-start');
   });
 
+  it('writes the copilot hook file with the correct event-keyed structure and type field on fresh init', () => {
+    const repo = makeGitRepo();
+    const hookPath = join(repo.repoRoot, '.github', 'hooks', 'chronicle.json');
+
+    executeInitCommand({ agent: ['copilot'] }, createTestRuntime({ cwd: repo.repoRoot }));
+
+    const hookContent = JSON.parse(readFileSync(hookPath, 'utf8')) as Record<string, unknown>;
+    const hooks = hookContent.hooks as Record<string, unknown>;
+    const sessionStart = hooks.SessionStart as Array<Record<string, unknown>>;
+
+    expect(Array.isArray(hookContent.hooks)).toBe(false);
+    expect(typeof hookContent.hooks).toBe('object');
+    expect(hooks).toHaveProperty('SessionStart');
+    expect(Array.isArray(sessionStart)).toBe(true);
+    expect(sessionStart).toHaveLength(1);
+    expect(sessionStart[0]?.type).toBe('command');
+    expect(sessionStart[0]?.command).toBe('chronicle hook session-start');
+    expect(sessionStart[0]?.timeout).toBe(5000);
+    expect(hookContent.$comment).toContain('managed by Chronicle');
+  });
+
   it('generates only copilot artifacts when copilot is the sole target and preserves yaml frontmatter before the managed header', () => {
     const repo = makeGitRepo();
 
@@ -263,7 +284,7 @@ describe('init command', () => {
     const skillContent = readFileSync(skillPath, 'utf8');
     const hookContent = JSON.parse(readFileSync(hookPath, 'utf8')) as {
       $comment?: string;
-      hooks: Array<{ command: string }>;
+      hooks: { SessionStart: Array<{ command: string; type: string }> };
     };
 
     expect(result.updated_paths).toContain('.github/skills/recall/SKILL.md');
@@ -271,7 +292,8 @@ describe('init command', () => {
     expect(skillContent).not.toContain('custom local rewrite');
     expect(skillContent).toContain('# /recall');
     expect(hookContent.$comment).toContain('managed by Chronicle');
-    expect(hookContent.hooks[0]?.command).toBe('chronicle hook session-start');
+    expect(hookContent.hooks.SessionStart[0]?.command).toBe('chronicle hook session-start');
+    expect(hookContent.hooks.SessionStart[0]?.type).toBe('command');
   });
 
   it('deduplicates and refreshes existing Chronicle claude SessionStart hooks', () => {

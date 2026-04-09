@@ -141,8 +141,54 @@ describe('template layer', () => {
 
     expect(claudeConfig.hooks.SessionStart[0]?.hooks[0]?.command).toBe('chronicle hook session-start');
     expect(claudeConfig.hooks.SessionStart[0]?.matcher).toBe('startup');
-    expect(copilotConfig.hooks[0]?.command).toBe('chronicle hook session-start');
-    expect(copilotConfig.hooks[0]?.event).toBe('SessionStart');
+    expect(copilotConfig.hooks.SessionStart[0]?.command).toBe('chronicle hook session-start');
+    expect(copilotConfig.hooks.SessionStart[0]?.type).toBe('command');
+  });
+
+  it('renders copilot hook config with correct event-keyed object structure', () => {
+    const copilotConfig = createCopilotHookConfig();
+
+    expect(copilotConfig.hooks).toBeTypeOf('object');
+    expect(Array.isArray(copilotConfig.hooks)).toBe(false);
+    expect(copilotConfig.hooks).toHaveProperty('SessionStart');
+    expect(Array.isArray(copilotConfig.hooks.SessionStart)).toBe(true);
+    expect(copilotConfig.hooks.SessionStart).toHaveLength(1);
+
+    const hook = copilotConfig.hooks.SessionStart[0];
+    expect(hook).toEqual({
+      type: 'command',
+      command: 'chronicle hook session-start',
+      timeout: 5000,
+    });
+  });
+
+  it('renders both hook configs with an event-keyed hooks object, not a flat array', () => {
+    const claudeConfig = createClaudeCodeHookConfig();
+    const copilotConfig = createCopilotHookConfig();
+
+    expect(Array.isArray(claudeConfig.hooks)).toBe(false);
+    expect(Array.isArray(copilotConfig.hooks)).toBe(false);
+    expect(claudeConfig.hooks).toHaveProperty('SessionStart');
+    expect(copilotConfig.hooks).toHaveProperty('SessionStart');
+    expect(Array.isArray(claudeConfig.hooks.SessionStart)).toBe(true);
+    expect(Array.isArray(copilotConfig.hooks.SessionStart)).toBe(true);
+  });
+
+  it('renders the copilot hook JSON with the exact schema Copilot expects', () => {
+    const rendered = renderCopilotHookConfig();
+    const parsed = JSON.parse(rendered) as Record<string, unknown>;
+    const hooks = parsed.hooks as Record<string, unknown>;
+    const sessionStart = hooks.SessionStart as Array<Record<string, unknown>>;
+
+    expect(Object.keys(parsed)).toEqual(['hooks']);
+    expect(Object.keys(hooks)).toEqual(['SessionStart']);
+    expect(sessionStart).toHaveLength(1);
+    expect(sessionStart[0]).toEqual({
+      type: 'command',
+      command: 'chronicle hook session-start',
+      timeout: 5000,
+    });
+    expect(sessionStart[0]?.type).toBe('command');
   });
 
   it('renders parseable json hook configs with trailing newlines', () => {

@@ -500,6 +500,29 @@ describe('integration lifecycle', () => {
     expect(readFileSync(join(repo.repoRoot, '.github', 'hooks', 'chronicle.json'), 'utf8')).toContain('chronicle hook session-start');
   });
 
+  it('writes the copilot hook file with the correct event-keyed structure through registered CLI', async () => {
+    const repo = makeRepo();
+
+    await runCliCommand(['init', '--agent', 'copilot'], { cwd: repo.repoRoot });
+
+    const hookPath = join(repo.repoRoot, '.github', 'hooks', 'chronicle.json');
+    const hookContent = JSON.parse(readFileSync(hookPath, 'utf8')) as Record<string, unknown>;
+    const hooks = hookContent.hooks as Record<string, unknown>;
+    const sessionStart = hooks.SessionStart as Array<Record<string, unknown>>;
+
+    expect(Array.isArray(hookContent.hooks)).toBe(false);
+    expect(typeof hookContent.hooks).toBe('object');
+    expect(hooks).toHaveProperty('SessionStart');
+    expect(Array.isArray(sessionStart)).toBe(true);
+    expect(sessionStart).toHaveLength(1);
+    expect(sessionStart[0]).toEqual(expect.objectContaining({
+      type: 'command',
+      command: 'chronicle hook session-start',
+      timeout: 5000,
+    }));
+    expect(hookContent.$comment).toContain('managed by Chronicle');
+  });
+
   it('supports create and update stdin flows with summaries larger than 10KB', async () => {
     const repo = makeRepo();
 

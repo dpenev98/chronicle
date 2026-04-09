@@ -1,24 +1,28 @@
 import { renderJsonTemplate } from '../shared';
 
-export interface CopilotHookDefinition {
+export interface CopilotCommandHook {
   command: string;
-  event: 'SessionStart';
   timeout: number;
+  type: 'command';
 }
 
 export interface CopilotHookSettings {
-  hooks: CopilotHookDefinition[];
+  hooks: {
+    SessionStart: CopilotCommandHook[];
+  };
 }
 
 export function createCopilotHookConfig(): CopilotHookSettings {
   return {
-    hooks: [
-      {
-        command: 'chronicle hook session-start',
-        event: 'SessionStart',
-        timeout: 5000,
-      },
-    ],
+    hooks: {
+      SessionStart: [
+        {
+          type: 'command',
+          command: 'chronicle hook session-start',
+          timeout: 5000,
+        },
+      ],
+    },
   };
 }
 
