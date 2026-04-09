@@ -4,7 +4,7 @@ export function renderCreateMemorySkill(agent: SupportedAgent): string {
   return renderSkillTemplate({
     agent,
     description: 'Create a Chronicle memory from the current session.',
-    name: '/create-memory',
+    name: 'create-memory',
     body: `# /create-memory
 
 Create a Chronicle memory that preserves durable project knowledge from the current session.

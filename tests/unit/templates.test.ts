@@ -34,7 +34,7 @@ describe('template layer', () => {
       'list-memories',
       'recall',
     ]);
-    expect(copilotSkills[0]?.content.startsWith('---\nname: /create-memory')).toBe(true);
+    expect(copilotSkills[0]?.content.startsWith('---\nname: create-memory')).toBe(true);
     expect(claudeSkills[0]?.content.startsWith('---')).toBe(false);
   });
 
@@ -55,7 +55,7 @@ describe('template layer', () => {
 
     for (const skill of copilotSkills) {
       expect(countOccurrences(skill.content, '---')).toBe(2);
-      expect(skill.content.startsWith('---\nname: /')).toBe(true);
+      expect(skill.content.startsWith('---\nname: ')).toBe(true);
       expect(skill.content).toContain('\ndescription: ');
       expect(skill.content).toContain('\n# /');
     }

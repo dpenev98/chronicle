@@ -4,7 +4,7 @@ export function renderUpdateMemorySkill(agent: SupportedAgent): string {
   return renderSkillTemplate({
     agent,
     description: 'Update an existing Chronicle memory while preserving still-correct information.',
-    name: '/update-memory',
+    name: 'update-memory',
     body: `# /update-memory
 
 Update an existing Chronicle memory when the project has changed or a memory is incomplete.

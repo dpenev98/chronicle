@@ -264,7 +264,7 @@ describe('init command', () => {
     expect(result.target_agents).toEqual(['copilot']);
     expect(existsSync(join(repo.repoRoot, '.claude'))).toBe(false);
     expect(existsSync(join(repo.repoRoot, 'CLAUDE.md'))).toBe(false);
-    expect(skillContent.startsWith('---\nname: /recall\n')).toBe(true);
+    expect(skillContent.startsWith('---\nname: recall\n')).toBe(true);
     expect(frontmatterEnd).toBeGreaterThan(0);
     expect(afterFrontmatter.startsWith('<!-- This file is managed by Chronicle.')).toBe(true);
   });

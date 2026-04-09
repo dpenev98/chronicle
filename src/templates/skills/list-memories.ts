@@ -4,7 +4,7 @@ export function renderListMemoriesSkill(agent: SupportedAgent): string {
   return renderSkillTemplate({
     agent,
     description: 'List Chronicle memories so you can browse the catalog before loading full entries.',
-    name: '/list-memories',
+    name: 'list-memories',
     body: `# /list-memories
 
 Browse the Chronicle memory catalog before deciding which full memories to load.

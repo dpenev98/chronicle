@@ -4,7 +4,7 @@ export function renderRecallSkill(agent: SupportedAgent): string {
   return renderSkillTemplate({
     agent,
     description: 'Load one or more Chronicle memories into the current session context.',
-    name: '/recall',
+    name: 'recall',
     body: `# /recall
 
 Load one or more Chronicle memories into the current session when they are relevant to the task.
