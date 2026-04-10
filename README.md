@@ -4,7 +4,7 @@
 [![CI](https://github.com/dpenev98/chronicle/actions/workflows/ci.yml/badge.svg)](https://github.com/dpenev98/chronicle/actions/workflows/ci.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](./LICENSE)
 
-> **Status:** Early alpha. The core CLI and agent integration are implemented but undergoing validation. See [STATUS.md](./docs/specs/STATUS.md) for current progress.
+> **Status:** Early alpha (`0.0.1-alpha`). The core CLI, agent integration, and delivery pipeline are complete. See [STATUS.md](./docs/specs/STATUS.md) for details.
 
 Chronicle is a **project-scoped, local memory layer for coding agents**.
 

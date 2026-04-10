@@ -2,11 +2,12 @@
 
 ## Current Repository State
 
-Chronicle has been bootstrapped from a docs-only repository into a working TypeScript CLI codebase with a validated Epic 1 foundation, a completed Epic 2 command layer, and a completed Epic 3 integration/init scaffolding layer wired into `chronicle init`.
+Chronicle is a complete MVP — all four implementation epics are done, the delivery/packaging pipeline is in place, and the codebase is ready for its first npm publish.
 
-The implementation has followed the project docs as the authoritative source, especially:
+The implementation followed the project docs as the authoritative source:
 - `docs/specs/implementation-plan.md`
 - `docs/specs/functional-requirements.md`
+- `docs/specs/delivery-plan.md`
 - `docs/intial-idea.md`
 
 ## Implementation Progress
@@ -117,18 +118,33 @@ Manual follow-up:
 
 ### Epic 4: Integration Testing & Polish
 
-Status: In Progress
+Status: Done
 
-What was completed in this implementation pass:
-- added `tests/integration/lifecycle.test.ts` for registered-CLI end-to-end coverage
-- covered the full lifecycle flow: `init → create → list → get → update → supersede → list → delete`
-- verified Claude and Copilot `hook session-start` payload shapes
-- exercised large `--stdin` payload handling for create/update
-- added integration coverage for missing DB, corrupt DB, invalid stdin, nested-cwd and idempotent `init`, config-driven list and hook behavior, interactive delete flows, supersession repointing/cycle rejection, and CLI binary contract expectations
+Implemented:
+- `tests/integration/lifecycle.test.ts` for registered-CLI end-to-end coverage (18 tests)
+- full lifecycle flow: `init → create → list → get → update → supersede → list → delete`
+- Claude and Copilot `hook session-start` payload shape verification
+- large `--stdin` payload handling for create/update
+- integration coverage for missing DB, corrupt DB, invalid stdin, nested-cwd and idempotent `init`, config-driven list and hook behavior, interactive delete flows, supersession repointing/cycle rejection, and CLI binary contract expectations
+- manual real-agent validation for both Claude Code and GitHub Copilot
+- user-facing `README.md` with badges, prerequisites, quick start, CLI reference, agent integration, configuration, and contributing sections
 
-Remaining Epic 4 work:
-- manual real-agent validation for Claude Code and GitHub Copilot
-- README/polish/package publishing follow-through
+### Delivery Pipeline (Packaging, Publishing & CI/CD)
+
+Status: Done
+
+Implemented:
+- package metadata: version `0.0.1-alpha`, license, repository, author, keywords
+- `prepublishOnly` script for pre-publish validation
+- `.npmignore` as defense-in-depth alongside `files` allowlist
+- version bump scripts: `version:pre`, `version:patch`, `version:minor`, `version:major`
+- CI pipeline: `.github/workflows/ci.yml` with 3-platform matrix (Ubuntu, macOS, Windows), Node 20, `fail-fast: false`
+- CD pipeline: `.github/workflows/publish.yml` with tag-based triggers, stable/prerelease classification, publish provenance, GitHub Release auto-creation
+- operations documentation in `docs/operations.md`
+
+Verified:
+- `npm pack --dry-run` produces a clean 7-file tarball: `bin/chronicle.js`, `dist/index.js`, `dist/index.d.ts`, `dist/index.js.map`, `package.json`, `README.md`, `LICENSE`
+- no source, test, or doc leakage in the tarball
 
 ## Technical Decisions Made During Implementation
 
@@ -137,9 +153,8 @@ Remaining Epic 4 work:
 The repo docs are treated as the source of truth for scope and sequencing.
 
 Practical outcome:
-- Epic 1 was completed first
-- Epic 2 is now complete
-- the template layer was built before `chronicle init` and is now the generation boundary used by `init` for managed artifacts
+- all four epics were completed in order
+- the template layer was built before `chronicle init` and is the generation boundary used by `init` for managed artifacts
 
 ### 2. Keep the CLI strongly typed and modular
 
@@ -206,7 +221,7 @@ Practical outcome:
 
 ### Strong typing
 
-Patterns established so far:
+Patterns established:
 - no `any` usage in implemented code
 - explicit interfaces for command options and results
 - explicit mapping between internal DB records and CLI JSON payloads
@@ -214,7 +229,7 @@ Patterns established so far:
 
 ### Clear validation boundaries
 
-Patterns established so far:
+Patterns established:
 - parsing and validation happen before persistence
 - malformed inputs produce explicit validation errors
 - config validation is centralized
@@ -222,14 +237,14 @@ Patterns established so far:
 
 ### Resource lifecycle discipline
 
-Patterns established so far:
+Patterns established:
 - DB connections are opened close to use sites
 - command execution closes DB handles in `finally` blocks
 - hook execution preserves the same cleanup discipline while still degrading gracefully
 
 ### Testability-first design
 
-Patterns established so far:
+Patterns established:
 - command execution functions are exported independently of Commander registration
 - test helpers create temporary repos and seeded Chronicle state
 - tests cover both happy paths and failure behavior
@@ -237,19 +252,19 @@ Patterns established so far:
 
 ### Machine-first CLI outputs
 
-Patterns established so far:
+Patterns established:
 - JSON output uses stable shapes for command results
 - list/get payloads normalize internal camelCase fields into CLI-facing snake_case where appropriate
 - error rendering is centralized and consistent
 
 ### Reusable artifact generation
 
-Patterns established so far:
-- future generated artifacts are represented as typed render functions
+Patterns established:
+- generated artifacts are represented as typed render functions
 - agent-specific differences are isolated at the template boundary
 - file content generation is testable independently from filesystem writes
 
-## Issues Found and Resolved So Far
+## Issues Found and Resolved
 
 ### Partial update parameter binding bug
 
@@ -297,24 +312,22 @@ The current codebase has been validated with:
 - `npm run typecheck`
 - `npm run build`
 - `npm test`
+- `npm pack --dry-run`
 
-Current known validated state:
-- all implemented unit tests pass
-- all implemented command tests pass
+Current validated state:
+- all unit tests pass
+- all command tests pass
 - template layer unit tests pass
-- expanded `init` command coverage passes, including idempotency, invalid persisted files, overwrite semantics, and integrity-check error paths
+- init command coverage passes, including idempotency, invalid persisted files, overwrite semantics, and integrity-check error paths
 - Epic 4 lifecycle integration coverage passes, including hook payloads, large stdin payloads, deletion/supersession edge cases, config-driven behavior, and structured error paths
-- current total: `88/88` tests passing at the latest validation checkpoint
+- manual Claude Code and GitHub Copilot agent validation completed
+- current total: **93 tests passing** across 17 test files
 
 ## Current Repository Conventions
 
 ### Branching / source control
 
-Current working branch at the last documented checkpoint:
-- `feat/epic-1-foundation`
-
-Existing conventional commit created earlier:
-- `feat: scaffold chronicle CLI foundation`
+Current working branch: `main`
 
 ### File organization
 
@@ -327,31 +340,24 @@ Current implementation organization:
 - `src/utils/` for shared non-command utilities
 - `tests/unit/` for foundational unit coverage
 - `tests/commands/` for command execution coverage
+- `tests/integration/` for end-to-end lifecycle coverage
 
-## What Is Intentionally Deferred Right Now
+## What Remains Before First Publish
 
-Deferred for plan alignment:
-- manual Epic 4 real-agent validation and polish work
-- manual confirmation of the Copilot local hook schema against current public docs
+The MVP implementation is complete. The only remaining items are external setup steps:
 
-Reason:
-- the remaining work is now manual validation and release/polish follow-through rather than core command, template-generation, or automated integration implementation
-
-## Recommended Next Step
-
-The clean next step is:
-- continue Epic 4 with manual Claude Code and GitHub Copilot validation, then finish README/publish polish, including confirmation of the Copilot local hook schema against current public docs
-
-If the implementation order is intentionally changed later, then:
-- external validation of the Copilot local hook JSON schema remains the main open Epic 3 item before broader polish work
+- Configure `NPM_TOKEN` as a GitHub repository secret (npm automation token)
+- Verify npm account ownership of the `chronicle-memory` package name
+- Push to `main` to trigger CI, then tag `v0.0.1-alpha` and push to trigger the first publish
 
 ## Summary
 
-Chronicle currently has:
-- a complete Epic 1 foundation
-- a complete and tested Epic 2 command layer
-- a complete Epic 3 template and init-generation layer that produces managed agent integration artifacts
-- automated Epic 4 lifecycle integration coverage for the implemented command set and hook flows
-- strong typing and explicit validation boundaries
-- consistent error handling and resource cleanup patterns
-- a stable base for remaining Epic 4 manual validation and polish work next
+Chronicle MVP is complete:
+- **Epic 1** — project scaffold and database layer
+- **Epic 2** — all 8 CLI commands implemented and tested
+- **Epic 3** — agent integration templates and init scaffolding for Claude Code and Copilot
+- **Epic 4** — integration tests, manual agent validation, README, and packaging
+- **Delivery pipeline** — CI (3-platform matrix), CD (tag-based publish with provenance), version scripts, `.npmignore`, and operations docs
+- **93 tests passing** across unit, command, and integration layers
+- **Clean `npm pack` tarball** with no source/test leakage
+- Strong typing, explicit validation boundaries, consistent error handling, resource lifecycle discipline, and testability-first design throughout

@@ -23,6 +23,8 @@ This document is the detailed implementation plan for making Chronicle publishab
 
 ## Task 1: Package Metadata & Publish Safety
 
+[STATUS]: Done
+
 **Goal:** Ensure `npm pack` produces a clean, minimal tarball with correct metadata and no source/test leakage.
 
 ### 1.1 — Update `package.json` fields
@@ -116,13 +118,15 @@ No `src/`, `tests/`, `docs/`, `AGENTS.md`, `tsconfig.json`, `tsup.config.ts`, or
 
 ### Acceptance criteria
 
-- [ ] `npm pack --dry-run` shows only the expected files listed above
-- [ ] `package.json` has all metadata fields filled in (version, license, repository, author, keywords)
-- [ ] `prepublishOnly` script runs typecheck + build + test before publish
+- [x] `npm pack --dry-run` shows only the expected files listed above
+- [x] `package.json` has all metadata fields filled in (version, license, repository, author, keywords)
+- [x] `prepublishOnly` script runs typecheck + build + test before publish
 
 ---
 
 ## Task 2: Version Strategy & Version Bump Scripts
+
+[STATUS]: Done
 
 **Goal:** Establish a clear versioning workflow from alpha to stable, with convenient npm scripts.
 
@@ -166,13 +170,15 @@ Pushing the tag (`git push --follow-tags`) triggers the appropriate CD workflow.
 
 ### Acceptance criteria
 
-- [ ] `package.json` version is `0.0.1-alpha`
-- [ ] All four version scripts work and produce correct versions + tags
-- [ ] `git log` shows version commit and `git tag` shows the tag after running a bump
+- [x] `package.json` version is `0.0.1-alpha`
+- [x] All four version scripts work and produce correct versions + tags
+- [x] `git log` shows version commit and `git tag` shows the tag after running a bump
 
 ---
 
 ## Task 3: CI Pipeline — `.github/workflows/ci.yml`
+
+[STATUS]: Done
 
 **Goal:** Automated quality gate on every push to `main` and every pull request. Cross-platform validation of the native addon build.
 
@@ -227,14 +233,16 @@ No additional setup steps are needed for `better-sqlite3` compilation on any pla
 
 ### Acceptance criteria
 
-- [ ] CI runs on every push to `main` and every PR
-- [ ] All three platforms (Linux, macOS, Windows) pass: install → typecheck → build → test
-- [ ] `better-sqlite3` native compilation succeeds on all platforms without extra setup
-- [ ] npm cache is used to speed up installs
+- [x] CI runs on every push to `main` and every PR
+- [x] All three platforms (Linux, macOS, Windows) pass: install → typecheck → build → test
+- [x] `better-sqlite3` native compilation succeeds on all platforms without extra setup
+- [x] npm cache is used to speed up installs
 
 ---
 
 ## Task 4: CD Pipeline — `.github/workflows/publish.yml`
+
+[STATUS]: Done
 
 **Goal:** Automated npm publishing on git tags, with separate stable and prerelease flows.
 
@@ -367,15 +375,17 @@ git push --follow-tags     # pushes commit + tag → triggers publish workflow
 
 ### Acceptance criteria
 
-- [ ] Pushing a `v*-alpha.*` tag publishes to npm under the `next` dist-tag
-- [ ] Pushing a `v0.x.y` tag (no suffix) publishes to npm under the `latest` dist-tag
-- [ ] Full validation (typecheck + build + test) runs before every publish
-- [ ] GitHub Release is created automatically with correct prerelease flag
-- [ ] `NPM_TOKEN` secret is documented as a setup requirement
+- [x] Pushing a `v*-alpha.*` tag publishes to npm under the `next` dist-tag
+- [x] Pushing a `v0.x.y` tag (no suffix) publishes to npm under the `latest` dist-tag
+- [x] Full validation (typecheck + build + test) runs before every publish
+- [x] GitHub Release is created automatically with correct prerelease flag
+- [x] `NPM_TOKEN` secret is documented as a setup requirement
 
 ---
 
 ## Task 5: README Rewrite for Public Consumption
+
+[STATUS]: Done
 
 **Goal:** Extend the current developer-facing README with a user-facing segment suitable for the npm package page and GitHub landing.
 
@@ -469,14 +479,14 @@ Keep linking to the detailed docs (`docs/architecture.md`, `docs/specs/`) for co
 
 ### Acceptance criteria
 
-- [ ] README is written for end-users (developers installing Chronicle), not contributors
-- [ ] Prerequisites clearly document native build tool requirements per platform
-- [ ] Quick Start walks through init → first session → memory creation → recall
-- [ ] All CLI commands are documented with description and key flags
-- [ ] Agent integration section explains what `chronicle init` generates and how hooks work
-- [ ] Configuration settings table is included
-- [ ] Badges render correctly (npm, CI, license)
-- [ ] Contributing section exists but is brief (clone, install, test, link to AGENTS.md)
+- [x] README is written for end-users (developers installing Chronicle), not contributors
+- [x] Prerequisites clearly document native build tool requirements per platform
+- [x] Quick Start walks through init → first session → memory creation → recall
+- [x] All CLI commands are documented with description and key flags
+- [x] Agent integration section explains what `chronicle init` generates and how hooks work
+- [x] Configuration settings table is included
+- [x] Badges render correctly (npm, CI, license)
+- [x] Contributing section exists but is brief (clone, install, test, link to AGENTS.md)
 
 ---
 
@@ -516,7 +526,7 @@ Before the first real publish, verify:
 
 | Item | Current State | Action Needed |
 |---|---|---|
-| GitHub repository URL | Not in `package.json` | Fill in `repository`, `homepage`, `bugs` fields |
-| Author name | Not in `package.json` | Fill in `author` field |
+| GitHub repository URL | Done | Filled in `package.json` as `dpenev98/chronicle` |
+| Author name | Done | Filled in `package.json` as `dpenev98` |
 | `NPM_TOKEN` secret | Not configured | Create npm automation token and add to GitHub repo secrets |
 | npm account | Unknown | Ensure the publishing npm account exists and owns `chronicle-memory` (or the name is available) |

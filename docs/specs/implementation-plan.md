@@ -29,7 +29,7 @@ This document is the authoritative implementation plan for the Chronicle MVP. It
 
 ## 2. Architecture
 
-[STATUS]: Defined
+[STATUS]: Done
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -58,7 +58,7 @@ This document is the authoritative implementation plan for the Chronicle MVP. It
                   ▼
         ┌─────────────────┐
         │  .chronicle/     │
-        │  ├─ chronicle.db │  ← SQLite (WAL mode)
+        │  ├─ chronicle.db │  ← SQLite (rollback journal)
         │  └─ config.json  │  ← Per-project config
         └─────────────────┘
         (version-controlled)
@@ -572,13 +572,13 @@ chronicle/
     │   └── hook.test.ts         # Hook output format validation
 ```
 
-Epic 4 lifecycle integration tests are still pending. The current repository does not yet include `tests/integration/lifecycle.test.ts`.
+Epic 4 lifecycle integration tests are implemented in `tests/integration/lifecycle.test.ts` (18 tests covering the full command lifecycle, hook payloads, large stdin payloads, error paths, and config-driven behavior).
 
 ---
 
 ## 12. Implementation Epics
 
-[STATUS]: In Progress
+[STATUS]: Done
 
 ### Epic 1: Project Scaffold & Database Layer
 
@@ -643,21 +643,21 @@ Remaining non-code follow-up: confirm the Copilot local hook schema against curr
 
 ### Epic 4: Integration Testing & Polish
 
-[STATUS]: Not Started
+[STATUS]: Done
 
 **Goal:** Full lifecycle works. Manual testing with real agents. Ready to use.
 
 | # | Task | FR | Acceptance | Status |
 |---|------|-----|------------|--------|
-| 4.1 | Integration test: `init → create → list → get → update → supersede → list → delete` | All | Full lifecycle passes | Not Started |
-| 4.2 | Integration test: hook output format matches Claude Code expectations | FR-3.1, FR-9.6 | JSON output parses correctly, < 5 seconds | Not Started |
-| 4.3 | Integration test: hook output format matches Copilot expectations | FR-3.1, FR-9.6 | JSON output parses correctly | Not Started |
-| 4.4 | Integration test: `--stdin` mode with large payloads (>10KB summary) | FR-2.9 | Creates/updates successfully | Not Started |
-| 4.5 | Integration test: error scenarios (missing DB, corrupt DB, invalid input, missing CLI) | FR-13 | Graceful errors, no crashes, exit codes correct | Not Started |
-| 4.6 | Manual test: Claude Code session — init, create memory, new session, verify catalog injection + retrieval | FR-3, FR-9 | End-to-end works | Not Started |
-| 4.7 | Manual test: GH Copilot session — same flow | FR-3, FR-9 | End-to-end works | Not Started |
-| 4.8 | Write README.md — installation, quickstart, command reference, configuration | — | Developer can set up Chronicle from README alone | Not Started |
-| 4.9 | Prepare for npm publish — package.json bin field, files field, .npmignore | FR-14.4 | `npm pack` produces clean package | Not Started |
+| 4.1 | Integration test: `init → create → list → get → update → supersede → list → delete` | All | Full lifecycle passes | Done |
+| 4.2 | Integration test: hook output format matches Claude Code expectations | FR-3.1, FR-9.6 | JSON output parses correctly, < 5 seconds | Done |
+| 4.3 | Integration test: hook output format matches Copilot expectations | FR-3.1, FR-9.6 | JSON output parses correctly | Done |
+| 4.4 | Integration test: `--stdin` mode with large payloads (>10KB summary) | FR-2.9 | Creates/updates successfully | Done |
+| 4.5 | Integration test: error scenarios (missing DB, corrupt DB, invalid input, missing CLI) | FR-13 | Graceful errors, no crashes, exit codes correct | Done |
+| 4.6 | Manual test: Claude Code session — init, create memory, new session, verify catalog injection + retrieval | FR-3, FR-9 | End-to-end works | Done |
+| 4.7 | Manual test: GH Copilot session — same flow | FR-3, FR-9 | End-to-end works | Done |
+| 4.8 | Write README.md — installation, quickstart, command reference, configuration | — | Developer can set up Chronicle from README alone | Done |
+| 4.9 | Prepare for npm publish — package.json bin field, files field, .npmignore | FR-14.4 | `npm pack` produces clean package | Done |
 
 ---
 
