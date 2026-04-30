@@ -17,6 +17,16 @@ function countOccurrences(content: string, fragment: string): number {
 }
 
 describe('template layer', () => {
+  function getSkillContent(agent: 'claude-code' | 'copilot'): string {
+    const skill = getSkillTemplateFiles(agent)[0];
+    return skill?.files.find((entry) => entry.relativePath === 'SKILL.md')?.content ?? '';
+  }
+
+  function getReferenceContent(agent: 'claude-code' | 'copilot'): string {
+    const skill = getSkillTemplateFiles(agent)[0];
+    return skill?.files.find((entry) => entry.relativePath === 'references/memory-template.md')?.content ?? '';
+  }
+
   it('renders one bundled Chronicle memory skill for both supported agents', () => {
     const claudeSkills = getSkillTemplateFiles('claude-code');
     const copilotSkills = getSkillTemplateFiles('copilot');
@@ -24,8 +34,10 @@ describe('template layer', () => {
     expect(claudeSkills).toHaveLength(1);
     expect(copilotSkills).toHaveLength(1);
     expect(claudeSkills.map((skill) => skill.directoryName)).toEqual(['chronicle-memory']);
-    expect(claudeSkills[0]?.content.startsWith('---\nname: chronicle-memory')).toBe(true);
-    expect(copilotSkills[0]?.content.startsWith('---\nname: chronicle-memory')).toBe(true);
+    expect(claudeSkills[0]?.files).toHaveLength(2);
+    expect(copilotSkills[0]?.files).toHaveLength(2);
+    expect(getSkillContent('claude-code').startsWith('---\nname: chronicle-memory')).toBe(true);
+    expect(getSkillContent('copilot').startsWith('---\nname: chronicle-memory')).toBe(true);
   });
 
   it('keeps skill directory names unique and aligned across agents', () => {
@@ -37,40 +49,44 @@ describe('template layer', () => {
     expect(new Set(claudeNames).size).toBe(claudeNames.length);
     expect(new Set(copilotNames).size).toBe(copilotNames.length);
     expect(copilotNames).toEqual(claudeNames);
+    expect(claudeSkills[0]?.files.map((entry) => entry.relativePath)).toEqual(['SKILL.md', 'references/memory-template.md']);
+    expect(copilotSkills[0]?.files.map((entry) => entry.relativePath)).toEqual(['SKILL.md', 'references/memory-template.md']);
   });
 
   it('renders spec-compliant yaml frontmatter for both agents', () => {
-    const copilotSkills = getSkillTemplateFiles('copilot');
-    const claudeSkills = getSkillTemplateFiles('claude-code');
+    const copilotSkills = [getSkillContent('copilot')];
+    const claudeSkills = [getSkillContent('claude-code')];
 
     for (const skill of copilotSkills) {
-      expect(countOccurrences(skill.content, '---')).toBe(2);
-      expect(skill.content.startsWith('---\nname: ')).toBe(true);
-      expect(skill.content).toContain('\ndescription: ');
-      expect(skill.content).toContain('\nlicense: Apache-2.0\n');
-      expect(skill.content).toContain('\n# /chronicle-memory');
+      expect(countOccurrences(skill, '---')).toBe(2);
+      expect(skill.startsWith('---\nname: ')).toBe(true);
+      expect(skill).toContain('\ndescription: ');
+      expect(skill).toContain('\nlicense: Apache-2.0\n');
+      expect(skill).toContain('\n# /chronicle-memory');
     }
 
     for (const skill of claudeSkills) {
-      expect(countOccurrences(skill.content, '---')).toBe(2);
-      expect(skill.content.startsWith('---\nname: ')).toBe(true);
-      expect(skill.content).toContain('\ndescription: ');
-      expect(skill.content).toContain('\nlicense: Apache-2.0\n');
-      expect(skill.content).toContain('\n# /chronicle-memory');
+      expect(countOccurrences(skill, '---')).toBe(2);
+      expect(skill.startsWith('---\nname: ')).toBe(true);
+      expect(skill).toContain('\ndescription: ');
+      expect(skill).toContain('\nlicense: Apache-2.0\n');
+      expect(skill).toContain('\n# /chronicle-memory');
     }
   });
 
   it('renders the bundled chronicle-memory skill with config-aware create guidance', () => {
     const content = renderChronicleMemorySkill('claude-code');
     const copilotContent = renderChronicleMemorySkill('copilot');
+    const referenceContent = getReferenceContent('claude-code');
 
     expect(content).toContain('Use this skill when the user wants to browse the Chronicle memory catalog');
     expect(content).toContain('## Workflow checklist');
     expect(content).toContain('## Gotchas');
     expect(content).toContain('## Final validation');
+    expect(content).toContain('references/memory-template.md');
+    expect(content).toContain('Treat it as a fill-in output format');
     expect(content).toContain('.chronicle/config.json');
     expect(content).toContain('chronicle create --stdin');
-    expect(content).toContain('## Goals');
     expect(content).toContain('if a future agent reads only the description');
     expect(content).toContain('chronicle list --format table');
     expect(content).toContain('chronicle update <id> --stdin');
@@ -78,6 +94,10 @@ describe('template layer', () => {
     expect(content).toContain('maxRetrievalTokenBudget');
     expect(content).toContain('"agent":"claude-code"');
     expect(copilotContent).toContain('"agent":"copilot"');
+    expect(referenceContent).toContain('## Goals');
+    expect(referenceContent).toContain('Key files modified: `path/to/file.ts`');
+    expect(referenceContent).not.toContain('Read this file');
+    expect(referenceContent).not.toContain('Guidance:');
   });
 
   it('renders the bundled skill with source-material guidance', () => {
@@ -96,6 +116,8 @@ describe('template layer', () => {
 
     expect(claudeInstructions).toContain('<!-- chronicle:start -->');
     expect(claudeInstructions).toContain('<!-- chronicle:end -->');
+    expect(claudeInstructions).toContain('Default to loading no memories');
+    expect(claudeInstructions).toContain('if relevance is uncertain, do not pull the memory');
     expect(claudeInstructions).toContain(`max ${DEFAULT_CONFIG.maxMemoriesToPull} memories`);
     expect(claudeInstructions).toContain(`max ${DEFAULT_CONFIG.maxRetrievalTokenBudget} total tokens`);
     expect(claudeInstructions).toContain('Use the `chronicle-memory` skill');
@@ -114,6 +136,7 @@ describe('template layer', () => {
     expect(instructions).toContain('max 9 memories');
     expect(instructions).toContain('max 1234 total tokens');
     expect(instructions).toContain('If loading more than 7 memories');
+    expect(instructions).toContain('Default to loading no memories');
     expect(instructions).not.toContain('{maxMemoriesToPull}');
     expect(instructions).not.toContain('{maxRetrievalTokenBudget}');
     expect(instructions).not.toContain('{requireConfirmationAbove}');

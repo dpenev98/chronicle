@@ -1,5 +1,26 @@
 import { renderSkillTemplate, type SupportedAgent } from '../shared';
 
+export function renderChronicleMemoryTemplateReference(): string {
+  return `## Goals
+- What the session was trying to achieve
+
+## Decisions
+- Key architectural/design decisions made and WHY
+
+## Implementation
+- What was actually built/changed
+- Key files modified: \`path/to/file.ts\`
+
+## Learnings
+- Insights, gotchas, patterns discovered
+
+## Current State
+- Where things stand at end of session
+
+## Next Steps
+- Explicit follow-up tasks or open questions`;
+}
+
 export function renderChronicleMemorySkill(agent: SupportedAgent): string {
   return renderSkillTemplate({
     agent,
@@ -12,7 +33,7 @@ Use this skill for Chronicle memory work only: browse the catalog, recall prior 
 ## Default workflow
 
 1. Pick one primary path first: browse, recall, create from session, create from source material, or update.
-2. Read \.chronicle/config.json\ before any action that depends on retrieval budgets or summary-size limits.
+2. Read \`.chronicle/config.json\` before any action that depends on retrieval budgets or summary-size limits.
 3. Prefer the smallest useful action: browse before recall, recall before update, update before creating a replacement memory when the existing one is still mostly correct.
 4. Use Chronicle CLI commands directly. For create and update, default to \`--stdin\` JSON payloads.
 
@@ -36,27 +57,8 @@ Progress:
 
 ## Summary template
 
-Use this structure for new memories and for summary rewrites during updates:
-
-\`\`\`markdown
-## Goals
-- ...
-
-## Decisions
-- ...
-
-## Implementation
-- ...
-
-## Learnings
-- ...
-
-## Current State
-- ...
-
-## Next Steps
-- ...
-\`\`\`
+Read [references/memory-template.md](references/memory-template.md) before creating a new memory or rewriting a summary.
+Treat it as a fill-in output format: keep the section order, replace the placeholder bullets with session-specific facts, and keep the result concise.
 
 ## Browse catalog
 
@@ -105,9 +107,10 @@ Default when the current session produced durable project knowledge that should 
 2. Capture durable decisions, implementation details, debugging discoveries, and next steps.
 3. Write a short title and a retrieval-oriented description.
 4. If loaded Chronicle memories influenced the result, collect their IDs for \`parentIds\`.
-5. Fill the summary template.
-6. Keep the summary within \`maxMemorySummaryTokens\`.
-7. Call Chronicle in \`--stdin\` mode.
+5. Read [references/memory-template.md](references/memory-template.md) and fill that template.
+6. Replace placeholders with concrete facts, file paths, commands, and decisions from the session.
+7. Keep the summary within \`maxMemorySummaryTokens\`.
+8. Call Chronicle in \`--stdin\` mode.
 
 Description quality rule: if a future agent reads only the description, it should still know whether the memory is relevant.
 
@@ -123,9 +126,11 @@ Default when the important knowledge already exists in docs, code, issue text, o
 
 1. Read the provided files or pasted text carefully.
 2. Analyze the supplied files or pasted text as the primary source material, not the conversation.
-3. Apply the same title, description, summary template, and \`parentIds\` rules used for session-based creation.
-4. Keep the summary within \`maxMemorySummaryTokens\`.
-5. Call Chronicle in \`--stdin\` mode.
+3. Read [references/memory-template.md](references/memory-template.md).
+4. Replace placeholders with concrete facts taken from the source material.
+5. Apply the same title, description, summary template, and \`parentIds\` rules used for session-based creation.
+6. Keep the summary within \`maxMemorySummaryTokens\`.
+7. Call Chronicle in \`--stdin\` mode.
 
 Command pattern:
 
@@ -146,9 +151,10 @@ Default when a saved memory is stale, incomplete, or partially incorrect but sti
 3. Compare the stored memory against the current project state and session context.
 4. Preserve information that is still correct.
 5. Update only the fields that are stale or incomplete.
-6. If you change \`summary\`, rewrite it using the summary template and keep it within \`maxMemorySummaryTokens\`.
-7. Prefer \`--stdin\` mode for structured updates.
-8. If the old memory is obsolete enough that a new memory would be clearer, create a replacement memory instead and consider \`chronicle supersede\`.
+6. If you change \`summary\`, read [references/memory-template.md](references/memory-template.md), preserve the template structure, and replace placeholders with updated facts.
+7. Keep the rewritten summary within \`maxMemorySummaryTokens\`.
+8. Prefer \`--stdin\` mode for structured updates.
+9. If the old memory is obsolete enough that a new memory would be clearer, create a replacement memory instead and consider \`chronicle supersede\`.
 
 Command pattern:
 

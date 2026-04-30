@@ -620,7 +620,7 @@ Remaining non-code follow-up: confirm the Copilot local hook schema against curr
 
 [STATUS]: Defined
 
-The `summary` field uses this structured markdown template (embedded in the `/create-memory` SKILL.md):
+The `summary` field uses this structured markdown template, bundled with the Chronicle memory skill at `references/memory-template.md` and loaded on demand when creating or rewriting summaries:
 
 ```markdown
 ## Goals

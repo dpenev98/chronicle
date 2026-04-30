@@ -1,16 +1,30 @@
 import type { SupportedAgent } from '../shared';
-import { renderChronicleMemorySkill } from './chronicle-memory';
+import { renderChronicleMemorySkill, renderChronicleMemoryTemplateReference } from './chronicle-memory';
+
+export interface SkillTemplateEntry {
+  content: string;
+  relativePath: string;
+}
 
 export interface SkillTemplateFile {
-  content: string;
   directoryName: string;
+  files: SkillTemplateEntry[];
 }
 
 export function getSkillTemplateFiles(agent: SupportedAgent): SkillTemplateFile[] {
   return [
     {
-      content: renderChronicleMemorySkill(agent),
       directoryName: 'chronicle-memory',
+      files: [
+        {
+          content: renderChronicleMemorySkill(agent),
+          relativePath: 'SKILL.md',
+        },
+        {
+          content: renderChronicleMemoryTemplateReference(),
+          relativePath: 'references/memory-template.md',
+        },
+      ],
     },
   ];
 }

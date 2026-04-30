@@ -393,12 +393,14 @@ function ensureAgentArtifacts(repoRoot: string, agent: SupportedAgent, result: I
   const skillsBaseDirectory = getSkillBaseDirectory(repoRoot, agent);
 
   for (const skillFile of getSkillTemplateFiles(agent)) {
-    const skillPath = join(skillsBaseDirectory, skillFile.directoryName, 'SKILL.md');
-    const relativePath = agent === 'claude-code'
-      ? `.claude/skills/${skillFile.directoryName}/SKILL.md`
-      : `.github/skills/${skillFile.directoryName}/SKILL.md`;
+    for (const entry of skillFile.files) {
+      const skillPath = join(skillsBaseDirectory, skillFile.directoryName, entry.relativePath);
+      const relativePath = agent === 'claude-code'
+        ? `.claude/skills/${skillFile.directoryName}/${entry.relativePath}`
+        : `.github/skills/${skillFile.directoryName}/${entry.relativePath}`;
 
-    applyChange(ensureFileContent(skillPath, renderManagedMarkdownContent(skillFile.content)), relativePath, result);
+      applyChange(ensureFileContent(skillPath, renderManagedMarkdownContent(entry.content)), relativePath, result);
+    }
   }
 
   const config = readConfig(join(repoRoot, '.chronicle', 'config.json'));

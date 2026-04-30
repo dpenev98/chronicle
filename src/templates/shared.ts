@@ -45,11 +45,11 @@ in a local SQLite database within the repository.
 ### On Session Start
 A memory catalog is injected into the session context. When you see the user's first message:
 1. Review the Chronicle memory catalog (titles and descriptions)
-2. Determine which memories, if any, are relevant to the user's request
-3. If relevant memories exist, run \`chronicle get <id>\` to load full content
-4. Respect budget limits: max ${config.maxMemoriesToPull} memories, max ${config.maxRetrievalTokenBudget} total tokens
-5. If loading more than ${config.requireConfirmationAbove} memories, ask the user first and show token estimates
-
+2. Default to loading no memories unless a memory is clearly relevant for the user's message
+3. Only load the smallest set of memories that are clearly relevant; if relevance is uncertain, do not pull that memory entry
+4. If a memory is clearly relevant to the user's message, run \`chronicle get <id>\` to load full content
+5. Respect budget limits: max ${config.maxMemoriesToPull} memories, max ${config.maxRetrievalTokenBudget} total tokens
+6. If loading more than ${config.requireConfirmationAbove} memories, ask the user first and show token estimates
 
 ### Memory Workflows
 Use the \`chronicle-memory\` skill for Chronicle memory operations such as browsing the catalog,
