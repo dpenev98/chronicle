@@ -13,16 +13,12 @@ function normalizeTemplateContent(content: string): string {
   return `${content.trim()}\n`;
 }
 
-function renderSkillFrontmatter(agent: SupportedAgent, name: string, description: string): string {
-  switch (agent) {
-    case 'claude-code':
-      return '';
-    case 'copilot':
-      return normalizeTemplateContent(`---
+function renderSkillFrontmatter(_agent: SupportedAgent, name: string, description: string): string {
+  return normalizeTemplateContent(`---
 name: ${name}
 description: ${description}
+license: Apache-2.0
 ---`);
-  }
 }
 
 export function renderSkillTemplate(options: SkillTemplateOptions): string {
@@ -47,25 +43,16 @@ Chronicle is separate from your built-in memory systems and stores structured pr
 in a local SQLite database within the repository.
 
 ### On Session Start
-A memory catalog may be injected into the session context. When you see the user's first message:
+A memory catalog is injected into the session context. When you see the user's first message:
 1. Review the Chronicle memory catalog (titles and descriptions)
-2. Determine which memories, if any, are relevant to the user's request
-3. If relevant memories exist, run \`chronicle get <id>\` to load full content
-4. Respect budget limits: max ${config.maxMemoriesToPull} memories, max ${config.maxRetrievalTokenBudget} total tokens
-5. If loading more than ${config.requireConfirmationAbove} memories, ask the user first and show token estimates
+2. Default to loading no memories unless a memory is clearly relevant for the user's message
+3. Only load the smallest set of memories that are clearly relevant; if relevance is uncertain, do not pull that memory entry
+4. If a memory is clearly relevant to the user's message, run \`chronicle get <id>\` to load full content
+5. Respect budget limits: max ${config.maxMemoriesToPull} memories, max ${config.maxRetrievalTokenBudget} total tokens
+6. If loading more than ${config.requireConfirmationAbove} memories, ask the user first and show token estimates
 
-### On Memory Conflicts
-If loaded memories contradict each other, prefer the most recently created one.
-Flag the conflict to the user so it can be resolved with a follow-up memory or a supersession update.
-
-### Verify Before Trusting
-After loading a memory, if it references specific files, implementations, or configurations,
-spot-check that those artifacts still exist and still match what the memory describes before relying on it.
-
-### Available Commands
-- \`chronicle list\` — View catalog entries
-- \`chronicle get <id>\` — Load a full memory
-- Use \`/create-memory\` to save session knowledge
-- Use \`/update-memory <id>\` to update an existing memory
-- \`chronicle supersede <old_id> <new_id>\` — Mark a memory as replaced`;
+### Memory Workflows
+Use the \`chronicle-memory\` skill for Chronicle memory operations such as browsing the catalog,
+recalling relevant memories, creating new memories, creating memories from existing source material,
+and updating stale memories.`;
 }

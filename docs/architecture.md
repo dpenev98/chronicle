@@ -8,12 +8,11 @@
 │                                                                  │
 │  ┌─────────────┐  ┌──────────────────┐  ┌────────────────────┐  │
 │  │ Session      │  │ Skills           │  │ Custom             │  │
-│  │ Start Hook   │  │ /create-memory   │  │ Instructions       │  │
-│  │ (catalog     │  │ /update-memory   │  │ (retrieval logic,  │  │
-│  │  injection)  │  │ /recall          │  │  budget rules)     │  │
-│  │              │  │ /list-memories   │  │                    │  │
-│  │              │  │ /create-memory-  │  │                    │  │
-│  │              │  │  from            │  │                    │  │
+│  │ Start Hook   │  │ /chronicle-      │  │ Instructions       │  │
+│  │ (catalog     │  │  memory          │  │ (retrieval logic,  │  │
+│  │  injection)  │  │ (list, recall,   │  │  budget rules,     │  │
+│  │              │  │  create, update) │  │  skill pointer)    │  │
+│  │              │  │                  │  │                    │  │
 │  └──────┬───────┘  └────────┬─────────┘  └────────────────────┘  │
 │         │                   │                                    │
 │         ▼                   ▼                                    │
