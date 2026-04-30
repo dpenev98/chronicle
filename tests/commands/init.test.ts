@@ -56,6 +56,7 @@ describe('init command', () => {
     expect(readFileSync(join(repo.repoRoot, '.gitignore'), 'utf8')).toContain('.chronicle/chronicle.db-journal');
     expect(readFileSync(join(repo.repoRoot, '.claude', 'settings.json'), 'utf8')).toContain('chronicle hook session-start');
     expect(readFileSync(join(repo.repoRoot, 'CLAUDE.md'), 'utf8')).toContain('<!-- chronicle:start -->');
+    expect(readFileSync(join(repo.repoRoot, '.claude', 'skills', 'chronicle-memory', 'SKILL.md'), 'utf8')).toContain('---\nname: chronicle-memory\n');
     expect(readFileSync(join(repo.repoRoot, '.claude', 'skills', 'chronicle-memory', 'SKILL.md'), 'utf8')).toContain('This file is managed by Chronicle');
   });
 

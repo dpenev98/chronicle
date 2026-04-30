@@ -13,16 +13,12 @@ function normalizeTemplateContent(content: string): string {
   return `${content.trim()}\n`;
 }
 
-function renderSkillFrontmatter(agent: SupportedAgent, name: string, description: string): string {
-  switch (agent) {
-    case 'claude-code':
-      return '';
-    case 'copilot':
-      return normalizeTemplateContent(`---
+function renderSkillFrontmatter(_agent: SupportedAgent, name: string, description: string): string {
+  return normalizeTemplateContent(`---
 name: ${name}
 description: ${description}
+license: Apache-2.0
 ---`);
-  }
 }
 
 export function renderSkillTemplate(options: SkillTemplateOptions): string {

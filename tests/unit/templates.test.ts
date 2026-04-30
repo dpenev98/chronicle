@@ -24,8 +24,8 @@ describe('template layer', () => {
     expect(claudeSkills).toHaveLength(1);
     expect(copilotSkills).toHaveLength(1);
     expect(claudeSkills.map((skill) => skill.directoryName)).toEqual(['chronicle-memory']);
+    expect(claudeSkills[0]?.content.startsWith('---\nname: chronicle-memory')).toBe(true);
     expect(copilotSkills[0]?.content.startsWith('---\nname: chronicle-memory')).toBe(true);
-    expect(claudeSkills[0]?.content.startsWith('---')).toBe(false);
   });
 
   it('keeps skill directory names unique and aligned across agents', () => {
@@ -39,7 +39,7 @@ describe('template layer', () => {
     expect(copilotNames).toEqual(claudeNames);
   });
 
-  it('renders copilot skills with exactly one yaml frontmatter block and claude skills without one', () => {
+  it('renders spec-compliant yaml frontmatter for both agents', () => {
     const copilotSkills = getSkillTemplateFiles('copilot');
     const claudeSkills = getSkillTemplateFiles('claude-code');
 
@@ -47,12 +47,16 @@ describe('template layer', () => {
       expect(countOccurrences(skill.content, '---')).toBe(2);
       expect(skill.content.startsWith('---\nname: ')).toBe(true);
       expect(skill.content).toContain('\ndescription: ');
+      expect(skill.content).toContain('\nlicense: Apache-2.0\n');
       expect(skill.content).toContain('\n# /chronicle-memory');
     }
 
     for (const skill of claudeSkills) {
-      expect(skill.content.startsWith('---')).toBe(false);
-      expect(skill.content.startsWith('# /chronicle-memory')).toBe(true);
+      expect(countOccurrences(skill.content, '---')).toBe(2);
+      expect(skill.content.startsWith('---\nname: ')).toBe(true);
+      expect(skill.content).toContain('\ndescription: ');
+      expect(skill.content).toContain('\nlicense: Apache-2.0\n');
+      expect(skill.content).toContain('\n# /chronicle-memory');
     }
   });
 
@@ -60,6 +64,7 @@ describe('template layer', () => {
     const content = renderChronicleMemorySkill('claude-code');
     const copilotContent = renderChronicleMemorySkill('copilot');
 
+    expect(content).toContain('Use when working with the Chronicle memory catalog');
     expect(content).toContain('.chronicle/config.json');
     expect(content).toContain('chronicle create --stdin');
     expect(content).toContain('## Goals');
@@ -191,11 +196,11 @@ describe('template layer', () => {
       agent: 'copilot',
       body: '\n# /demo\nBody\n',
       description: 'Demo description',
-      name: '/demo',
+      name: 'demo',
     });
     const json = renderJsonTemplate({ nested: { ok: true } });
 
-    expect(skill).toBe('---\nname: /demo\ndescription: Demo description\n---\n# /demo\nBody\n');
+    expect(skill).toBe('---\nname: demo\ndescription: Demo description\nlicense: Apache-2.0\n---\n# /demo\nBody\n');
     expect(json).toBe('{\n  "nested": {\n    "ok": true\n  }\n}\n');
   });
 });
