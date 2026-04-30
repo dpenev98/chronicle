@@ -7,24 +7,65 @@ export function renderChronicleMemorySkill(agent: SupportedAgent): string {
     name: 'chronicle-memory',
     body: `# /chronicle-memory
 
-Use this skill for all Chronicle memory workflows: browsing the catalog, recalling memories, creating new memories, creating memories from existing material, and updating stale memories.
+Use this skill for Chronicle memory work only: browse the catalog, recall prior context, create durable memories, create memories from existing project artifacts, or update stale memories.
 
-## General rules
+## Default workflow
 
-1. Start from titles and descriptions, then load only the memories that appear relevant.
-2. Read \`.chronicle/config.json\` whenever a workflow depends on retrieval budgets or summary size limits.
-3. Respect \`maxMemoriesToPull\`, \`maxRetrievalTokenBudget\`, \`requireConfirmationAbove\`, and \`maxMemorySummaryTokens\`.
-4. After loading a memory, verify any referenced files, implementations, or configuration before relying on it.
-5. Prefer \`--stdin\` for create and update operations so structured markdown and JSON remain reliable across shells.
-6. If loaded Chronicle memories influenced a new memory, include their IDs in \`parentIds\`.
+1. Pick one primary path first: browse, recall, create from session, create from source material, or update.
+2. Read \.chronicle/config.json\ before any action that depends on retrieval budgets or summary-size limits.
+3. Prefer the smallest useful action: browse before recall, recall before update, update before creating a replacement memory when the existing one is still mostly correct.
+4. Use Chronicle CLI commands directly. For create and update, default to \`--stdin\` JSON payloads.
 
-## List memories
+## Workflow checklist
 
-Use this when you need to browse the catalog before deciding what to load.
+Progress:
+- [ ] Identify the correct path for the current task
+- [ ] Read config if limits or summary size matter
+- [ ] Collect any memory IDs that influence the result
+- [ ] Run the Chronicle command for the chosen path
+- [ ] Validate the result before finishing
+
+## Gotchas
+
+- The description is the primary retrieval signal. Write it so a future agent can decide relevance without loading the full summary.
+- Do not load memories speculatively. Start from titles and descriptions and pull only the IDs that you deem most relevant.
+- If loaded memories influenced a new memory, record those IDs in \`parentIds\`.
+- For create-from-source workflows, treat the supplied files or pasted text as the source of truth, not the conversation history.
+- After recalling a memory, verify any referenced files, implementations, or configuration before relying on it. The repo may have changed.
+- When updating, preserve still-correct content. Do not rewrite a memory from scratch unless the old one is no longer trustworthy.
+
+## Summary template
+
+Use this structure for new memories and for summary rewrites during updates:
+
+\`\`\`markdown
+## Goals
+- ...
+
+## Decisions
+- ...
+
+## Implementation
+- ...
+
+## Learnings
+- ...
+
+## Current State
+- ...
+
+## Next Steps
+- ...
+\`\`\`
+
+## Browse catalog
+
+Default when you need to inspect available memories before choosing specific IDs.
 
 1. Run \`chronicle list --format table\`.
 2. Review titles, descriptions, token counts, and timestamps.
 3. If the catalog is truncated, page with \`--offset\` and \`--limit\`.
+4. Switch to recall only after specific IDs look relevant.
 
 Command pattern:
 
@@ -35,13 +76,14 @@ chronicle list --format table --offset 20 --limit 20
 
 ## Recall memories
 
-Use this when the current task may depend on previously saved project knowledge.
+Default when the task depends on prior project context, previous decisions, or stored implementation details.
 
 1. Start from the injected catalog or from \`chronicle list --format table\`.
 2. Select only the IDs that look relevant from title and description.
-3. If loading more than \`requireConfirmationAbove\` memories, ask the user first and show token estimates.
-4. Load each memory with \`chronicle get <id>\`.
-5. Verify referenced artifacts before relying on the loaded memory.
+3. Respect \`maxMemoriesToPull\`, \`maxRetrievalTokenBudget\`, and \`requireConfirmationAbove\`.
+4. If loading more than \`requireConfirmationAbove\` memories, ask the user first and show token estimates.
+5. Load each memory with \`chronicle get <id>\`.
+6. Verify referenced artifacts before relying on the loaded memory.
 
 Command pattern:
 
@@ -49,22 +91,23 @@ Command pattern:
 chronicle get <id>
 \`\`\`
 
+Validation loop:
+
+1. If a recalled memory conflicts with current repo state, flag the conflict.
+2. Prefer the more recent memory until the project state is clarified.
+3. Continue only after checking the relevant files or config.
+
 ## Create from the current session
 
-Use this when the conversation produced durable project knowledge worth reusing later.
+Default when the current session produced durable project knowledge that should be reusable later.
 
 1. Review the entire conversation, not just the last exchange.
 2. Capture durable decisions, implementation details, debugging discoveries, and next steps.
 3. Write a short title and a retrieval-oriented description.
-4. Build the summary with these sections:
-   - \`## Goals\`
-   - \`## Decisions\`
-   - \`## Implementation\`
-   - \`## Learnings\`
-   - \`## Current State\`
-   - \`## Next Steps\`
-5. Keep the summary within \`maxMemorySummaryTokens\`.
-6. Call Chronicle in \`--stdin\` mode.
+4. If loaded Chronicle memories influenced the result, collect their IDs for \`parentIds\`.
+5. Fill the summary template.
+6. Keep the summary within \`maxMemorySummaryTokens\`.
+7. Call Chronicle in \`--stdin\` mode.
 
 Description quality rule: if a future agent reads only the description, it should still know whether the memory is relevant.
 
@@ -76,11 +119,11 @@ echo '{"title":"...","description":"...","summary":"...","parentIds":["memory-1"
 
 ## Create from existing files or pasted material
 
-Use this for brownfield adoption when important knowledge already exists outside the current chat.
+Default when the important knowledge already exists in docs, code, issue text, or pasted source material outside the chat.
 
 1. Read the provided files or pasted text carefully.
 2. Analyze the supplied files or pasted text as the primary source material, not the conversation.
-3. Apply the same title, description, summary structure, and \`parentIds\` rules used for session-based creation.
+3. Apply the same title, description, summary template, and \`parentIds\` rules used for session-based creation.
 4. Keep the summary within \`maxMemorySummaryTokens\`.
 5. Call Chronicle in \`--stdin\` mode.
 
@@ -96,15 +139,16 @@ Example usage:
 
 ## Update an existing memory
 
-Use this when a saved memory is stale, incomplete, or partially incorrect.
+Default when a saved memory is stale, incomplete, or partially incorrect but still worth preserving.
 
 1. Identify the target memory ID.
 2. Load the current memory first with \`chronicle get <id>\`.
 3. Compare the stored memory against the current project state and session context.
 4. Preserve information that is still correct.
 5. Update only the fields that are stale or incomplete.
-6. If you change \`summary\`, keep it within \`maxMemorySummaryTokens\`.
+6. If you change \`summary\`, rewrite it using the summary template and keep it within \`maxMemorySummaryTokens\`.
 7. Prefer \`--stdin\` mode for structured updates.
+8. If the old memory is obsolete enough that a new memory would be clearer, create a replacement memory instead and consider \`chronicle supersede\`.
 
 Command pattern:
 
@@ -113,6 +157,15 @@ chronicle get <id>
 echo '{"summary":"## Goals\n...","description":"Updated retrieval signal"}' | chronicle update <id> --stdin
 \`\`\`
 
-Do not rewrite a memory from scratch unless the old content is no longer trustworthy.`,
+## Final validation
+
+Before finishing:
+
+1. Confirm the chosen path matches the user intent.
+2. Confirm config limits were respected.
+3. Confirm the description is retrieval-oriented.
+4. Confirm \`parentIds\` reflect only the memories that actually informed the result.
+5. Confirm recalled information was checked against the current repo state.
+6. If validation fails, revise the memory or rerun the Chronicle command before finishing.`,
   });
 }

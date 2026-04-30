@@ -65,12 +65,16 @@ describe('template layer', () => {
     const copilotContent = renderChronicleMemorySkill('copilot');
 
     expect(content).toContain('Use this skill when the user wants to browse the Chronicle memory catalog');
+    expect(content).toContain('## Workflow checklist');
+    expect(content).toContain('## Gotchas');
+    expect(content).toContain('## Final validation');
     expect(content).toContain('.chronicle/config.json');
     expect(content).toContain('chronicle create --stdin');
     expect(content).toContain('## Goals');
     expect(content).toContain('if a future agent reads only the description');
     expect(content).toContain('chronicle list --format table');
     expect(content).toContain('chronicle update <id> --stdin');
+    expect(content).toContain('chronicle supersede');
     expect(content).toContain('maxRetrievalTokenBudget');
     expect(content).toContain('"agent":"claude-code"');
     expect(copilotContent).toContain('"agent":"copilot"');
