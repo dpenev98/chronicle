@@ -64,7 +64,7 @@ describe('template layer', () => {
     const content = renderChronicleMemorySkill('claude-code');
     const copilotContent = renderChronicleMemorySkill('copilot');
 
-    expect(content).toContain('Use when working with the Chronicle memory catalog');
+    expect(content).toContain('Use this skill when the user wants to browse the Chronicle memory catalog');
     expect(content).toContain('.chronicle/config.json');
     expect(content).toContain('chronicle create --stdin');
     expect(content).toContain('## Goals');

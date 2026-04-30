@@ -3,7 +3,7 @@ import { renderSkillTemplate, type SupportedAgent } from '../shared';
 export function renderChronicleMemorySkill(agent: SupportedAgent): string {
   return renderSkillTemplate({
     agent,
-    description: 'Browse, recall, create, and update Chronicle memories. Use when working with the Chronicle memory catalog, saving durable project knowledge, or revising existing Chronicle memories.',
+    description: 'Use this skill when the user wants to browse the Chronicle memory catalog, load prior project context, save durable learnings from the current session, create memories from existing docs or pasted source material, or update an outdated Chronicle memory, even if they ask in terms of preserving context, recalling past decisions, or documenting what changed rather than mentioning Chronicle explicitly.',
     name: 'chronicle-memory',
     body: `# /chronicle-memory
 
