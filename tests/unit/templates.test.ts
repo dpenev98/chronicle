@@ -117,7 +117,7 @@ describe('template layer', () => {
     expect(claudeInstructions).toContain('<!-- chronicle:start -->');
     expect(claudeInstructions).toContain('<!-- chronicle:end -->');
     expect(claudeInstructions).toContain('Default to loading no memories');
-    expect(claudeInstructions).toContain('if relevance is uncertain, do not pull the memory');
+    expect(claudeInstructions).toContain('if relevance is uncertain, do not pull that memory entry');
     expect(claudeInstructions).toContain(`max ${DEFAULT_CONFIG.maxMemoriesToPull} memories`);
     expect(claudeInstructions).toContain(`max ${DEFAULT_CONFIG.maxRetrievalTokenBudget} total tokens`);
     expect(claudeInstructions).toContain('Use the `chronicle-memory` skill');
