@@ -87,11 +87,7 @@ Status: Done
 
 Implemented:
 - skill template modules under `src/templates/skills/`
-  - `create-memory`
-  - `create-memory-from`
-  - `update-memory`
-  - `list-memories`
-  - `recall`
+  - `chronicle-memory`
 - custom instruction template modules under `src/templates/instructions/`
   - `claude-md.ts`
   - `copilot-instructions.ts`
@@ -105,8 +101,8 @@ Implemented:
 Delivered behavior:
 - Claude skill templates render plain markdown skill content
 - Copilot skill templates render YAML frontmatter plus markdown content for slash-command discovery
-- the `/create-memory` and `/create-memory-from` prompts enforce `--stdin` usage and config-aware summary budgeting
-- the `/recall` prompt instructs the agent to respect retrieval budgets and confirmation thresholds from `.chronicle/config.json`
+- the bundled `/chronicle-memory` prompt covers list, recall, create, create-from-source, and update workflows in one skill
+- the bundled skill enforces `--stdin` usage for create and update flows and reads `.chronicle/config.json` for retrieval and summary limits
 - custom instruction snippets render with idempotent `<!-- chronicle:start -->` markers and config-derived budget values
 - hook templates render the shared `chronicle hook session-start` command for both agents
 - `chronicle init` now wires the template layer into real filesystem generation for both Claude and Copilot

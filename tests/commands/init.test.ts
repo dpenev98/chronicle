@@ -48,7 +48,7 @@ describe('init command', () => {
     expect(result.created_paths).toContain('.chronicle/config.json');
     expect(result.created_paths).toContain('.gitignore');
     expect(result.created_paths).toContain('.claude/settings.json');
-    expect(result.created_paths).toContain('.claude/skills/create-memory/SKILL.md');
+    expect(result.created_paths).toContain('.claude/skills/chronicle-memory/SKILL.md');
     expect(result.created_paths).toContain('CLAUDE.md');
     expect(existsSync(repo.dbPath)).toBe(true);
     expect(schemaVersion).toBe(CURRENT_SCHEMA_VERSION);
@@ -56,7 +56,7 @@ describe('init command', () => {
     expect(readFileSync(join(repo.repoRoot, '.gitignore'), 'utf8')).toContain('.chronicle/chronicle.db-journal');
     expect(readFileSync(join(repo.repoRoot, '.claude', 'settings.json'), 'utf8')).toContain('chronicle hook session-start');
     expect(readFileSync(join(repo.repoRoot, 'CLAUDE.md'), 'utf8')).toContain('<!-- chronicle:start -->');
-    expect(readFileSync(join(repo.repoRoot, '.claude', 'skills', 'create-memory', 'SKILL.md'), 'utf8')).toContain('This file is managed by Chronicle');
+    expect(readFileSync(join(repo.repoRoot, '.claude', 'skills', 'chronicle-memory', 'SKILL.md'), 'utf8')).toContain('This file is managed by Chronicle');
   });
 
   it('fails outside a git repository', () => {
@@ -222,9 +222,9 @@ describe('init command', () => {
 
     expect(result.target_agents).toEqual(['claude-code', 'copilot']);
     expect(existsSync(join(repo.repoRoot, '.github', 'hooks', 'chronicle.json'))).toBe(true);
-    expect(existsSync(join(repo.repoRoot, '.github', 'skills', 'recall', 'SKILL.md'))).toBe(true);
+    expect(existsSync(join(repo.repoRoot, '.github', 'skills', 'chronicle-memory', 'SKILL.md'))).toBe(true);
     expect(existsSync(join(repo.repoRoot, '.github', 'copilot-instructions.md'))).toBe(true);
-    expect(readFileSync(join(repo.repoRoot, '.github', 'skills', 'recall', 'SKILL.md'), 'utf8')).toContain('This file is managed by Chronicle');
+    expect(readFileSync(join(repo.repoRoot, '.github', 'skills', 'chronicle-memory', 'SKILL.md'), 'utf8')).toContain('This file is managed by Chronicle');
     expect(JSON.parse(readFileSync(join(repo.repoRoot, '.github', 'hooks', 'chronicle.json'), 'utf8')).$comment).toContain('managed by Chronicle');
     expect(mergedClaudeSettings.hooks.SessionStart).toHaveLength(2);
     expect(mergedClaudeSettings.hooks.SessionStart[0]?.hooks[0]?.command).toBe('echo existing-startup');
@@ -256,7 +256,7 @@ describe('init command', () => {
     const repo = makeGitRepo();
 
     const result = executeInitCommand({ agent: [' COPILOT '] }, createTestRuntime({ cwd: repo.repoRoot }));
-    const skillPath = join(repo.repoRoot, '.github', 'skills', 'recall', 'SKILL.md');
+    const skillPath = join(repo.repoRoot, '.github', 'skills', 'chronicle-memory', 'SKILL.md');
     const skillContent = readFileSync(skillPath, 'utf8');
     const frontmatterEnd = skillContent.indexOf('\n---\n', 4);
     const afterFrontmatter = skillContent.slice(frontmatterEnd + 5);
@@ -264,7 +264,7 @@ describe('init command', () => {
     expect(result.target_agents).toEqual(['copilot']);
     expect(existsSync(join(repo.repoRoot, '.claude'))).toBe(false);
     expect(existsSync(join(repo.repoRoot, 'CLAUDE.md'))).toBe(false);
-    expect(skillContent.startsWith('---\nname: recall\n')).toBe(true);
+    expect(skillContent.startsWith('---\nname: chronicle-memory\n')).toBe(true);
     expect(frontmatterEnd).toBeGreaterThan(0);
     expect(afterFrontmatter.startsWith('<!-- This file is managed by Chronicle.')).toBe(true);
   });
@@ -272,7 +272,7 @@ describe('init command', () => {
   it('overwrites Chronicle-owned copilot skill and hook artifacts on re-init', () => {
     const repo = makeGitRepo();
     const runtime = createTestRuntime({ cwd: repo.repoRoot });
-    const skillPath = join(repo.repoRoot, '.github', 'skills', 'recall', 'SKILL.md');
+    const skillPath = join(repo.repoRoot, '.github', 'skills', 'chronicle-memory', 'SKILL.md');
     const hookPath = join(repo.repoRoot, '.github', 'hooks', 'chronicle.json');
 
     executeInitCommand({ agent: ['copilot'] }, runtime);
@@ -287,10 +287,10 @@ describe('init command', () => {
       hooks: { SessionStart: Array<{ command: string; type: string }> };
     };
 
-    expect(result.updated_paths).toContain('.github/skills/recall/SKILL.md');
+    expect(result.updated_paths).toContain('.github/skills/chronicle-memory/SKILL.md');
     expect(result.updated_paths).toContain('.github/hooks/chronicle.json');
     expect(skillContent).not.toContain('custom local rewrite');
-    expect(skillContent).toContain('# /recall');
+    expect(skillContent).toContain('# /chronicle-memory');
     expect(hookContent.$comment).toContain('managed by Chronicle');
     expect(hookContent.hooks.SessionStart[0]?.command).toBe('chronicle hook session-start');
     expect(hookContent.hooks.SessionStart[0]?.type).toBe('command');

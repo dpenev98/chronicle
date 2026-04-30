@@ -27,6 +27,7 @@ describe('hook session-start command', () => {
     const result = executeSessionStartHookCommand(createTestRuntime({ cwd: repo.repoRoot }));
 
     expect(result.hookSpecificOutput?.additionalContext).toContain('has no memories yet');
+    expect(result.hookSpecificOutput?.additionalContext).toContain('/chronicle-memory');
     expect(result.hookSpecificOutput?.hookEventName).toBe('SessionStart');
   });
 

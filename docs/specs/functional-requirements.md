@@ -91,7 +91,7 @@ When a memory becomes outdated (e.g., a technology migration invalidates earlier
 
 **FR-2.9**: The storage interface must accept large text fields (summary, description) via standard input or file reference, not solely via command-line arguments, to avoid platform-specific command-line length limitations (e.g., Windows shell limits).
 
-**FR-2.10**: A developer must be able to create memories from arbitrary text sources — files, documentation, architecture decisions, README content, or any other existing project artifacts — not only from conversation context. This supports brownfield adoption where a project already has valuable knowledge that was never captured in an agent session. A separate skill (`/create-memory-from`) must instruct the agent to analyze provided file paths or pasted text and generate a structured memory from that content, following the same format and quality standards as conversation-based memories.
+**FR-2.10**: A developer must be able to create memories from arbitrary text sources — files, documentation, architecture decisions, README content, or any other existing project artifacts — not only from conversation context. This supports brownfield adoption where a project already has valuable knowledge that was never captured in an agent session. The bundled Chronicle memory skill (`/chronicle-memory`) must instruct the agent how to analyze provided file paths or pasted text and generate a structured memory from that content, following the same format and quality standards as conversation-based memories.
 
 ---
 
@@ -196,17 +196,17 @@ When a memory becomes outdated (e.g., a technology migration invalidates earlier
 
 **FR-9.2**: Integration must use each agent's native extension mechanisms:
 - **Hooks**: For automatic catalog injection at session start
-- **Skills / Slash Commands**: For user-triggered memory operations (`/create-memory`, `/create-memory-from`, `/update-memory`, `/list-memories`, `/recall`)
+- **Skills / Slash Commands**: For user-triggered memory operations via a bundled Chronicle memory skill (`/chronicle-memory`) that covers list, recall, create, create-from-source, and update workflows
 - **Custom Instructions**: For guiding the agent's retrieval decision logic and memory generation behavior
 
 **FR-9.3**: The integration artifacts (hooks, skills, instructions) must be generated automatically during project initialization.
 
-**FR-9.4**: Skills must provide the agent with complete, structured instructions on:
+**FR-9.4**: The bundled Chronicle memory skill must provide the agent with complete, structured instructions on:
 - How to analyze a session and generate each memory field
 - How to analyze external text sources (files, docs, pasted text) and generate each memory field
 - The exact structured format for the summary
 - How to determine knowledge ancestry (parent memories)
-- How to interact with the storage layer
+- How to browse, recall, create, and update memories through the storage layer
 
 **FR-9.5**: Custom instructions must guide the agent on:
 - When and how to evaluate the memory catalog
@@ -327,7 +327,7 @@ When a memory becomes outdated (e.g., a technology migration invalidates earlier
 ### Flow G: Creating a Memory from Existing Artifacts (Brownfield)
 
 1. Developer onboards Chronicle into an existing project that already has architecture docs, READMEs, or design decisions
-2. Developer triggers `/create-memory-from @docs/architecture.md @docs/api-design.md` (or pastes text directly)
+2. Developer triggers `/chronicle-memory` with `@docs/architecture.md` and `@docs/api-design.md` (or pastes text directly)
 3. The agent reads the referenced files or pasted content
 4. The agent generates a structured memory (title, description, summary) based on the source material, following the same quality standards as conversation-based memories
 5. The memory is stored and available for future session retrieval

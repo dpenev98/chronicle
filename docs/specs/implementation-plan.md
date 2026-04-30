@@ -134,8 +134,8 @@ chronicle init [--agent claude-code] [--agent copilot]
    .chronicle/chronicle.db-journal
    ```
 3. Based on `--agent` flags (default: `claude-code`). Can be specified multiple times to target multiple agents:
-   - **claude-code**: Create `.claude/skills/` (5 skills), configure hooks, append to `CLAUDE.md`
-   - **copilot**: Create `.github/skills/` (5 skills), configure hooks, append to `.github/copilot-instructions.md`
+  - **claude-code**: Create `.claude/skills/chronicle-memory/SKILL.md`, configure hooks, append to `CLAUDE.md`
+  - **copilot**: Create `.github/skills/chronicle-memory/SKILL.md`, configure hooks, append to `.github/copilot-instructions.md`
 4. **Managed artifact policy:**
    - **Markdown instruction files** (`CLAUDE.md`, `copilot-instructions.md`): Use `<!-- chronicle:start -->` / `<!-- chronicle:end -->` marker blocks. Re-init replaces the block content, preserving user content outside markers (FR-1.4).
    - **Chronicle-owned files** (SKILL.md files, hook JSON): Fully owned by Chronicle. Re-init **overwrites** these files. A generated header comment notes they are Chronicle-managed. User edits to these files may be lost on re-init.
@@ -249,7 +249,7 @@ chronicle hook session-start
    - Output empty JSON with no `additionalContext` — Chronicle is invisible to the agent (FR-13.1)
 6. **If `.chronicle/` exists but zero active memories**:
    - Exit 0
-   - Inject brief message: "Chronicle is initialized but has no memories yet. Use /create-memory to save session knowledge." (FR-3.10)
+  - Inject brief message: "Chronicle is initialized but has no memories yet. Use /chronicle-memory to save session knowledge." (FR-3.10)
 7. **Always exits 0** — never blocks the agent session (FR-13.1, FR-13.5)
 
 ---
@@ -289,29 +289,13 @@ All CLI commands follow a consistent error pattern:
 │
 ├── .claude/                    ← (if --agent includes claude-code)
 │   ├── skills/
-│   │   ├── create-memory/
-│   │   │   └── SKILL.md
-│   │   ├── create-memory-from/
-│   │   │   └── SKILL.md
-│   │   ├── update-memory/
-│   │   │   └── SKILL.md
-│   │   ├── list-memories/
-│   │   │   └── SKILL.md
-│   │   └── recall/
+│   │   └── chronicle-memory/
 │   │       └── SKILL.md
 │   └── settings.json           ← Hook config (merged, not overwritten)
 │
 ├── .github/                    ← (if --agent includes copilot)
 │   ├── skills/
-│   │   ├── create-memory/
-│   │   │   └── SKILL.md
-│   │   ├── create-memory-from/
-│   │   │   └── SKILL.md
-│   │   ├── update-memory/
-│   │   │   └── SKILL.md
-│   │   ├── list-memories/
-│   │   │   └── SKILL.md
-│   │   └── recall/
+│   │   └── chronicle-memory/
 │   │       └── SKILL.md
 │   └── hooks/
 │       └── chronicle.json      ← Hook config (Chronicle-managed, overwritten)
@@ -378,50 +362,23 @@ Current in-repo behavior is implemented and tested for both agents, including Cl
 
 [STATUS]: Done
 
-Five SKILL.md files are generated per agent. They share identical content; only the directory differs (`.claude/skills/` vs `.github/skills/`).
+One bundled `chronicle-memory` SKILL.md file is generated per agent. The content is shared across agents; only the destination directory differs (`.claude/skills/` vs `.github/skills/`).
 
 **Copilot SKILL.md frontmatter:** Copilot / VS Code skills require YAML frontmatter (`name`, `description`) at the top of each SKILL.md for slash-command discovery. Claude Code skills do not require this. The `init` command generates the appropriate format per agent.
 
 **Config-aware templates:** Skill prompts must instruct the agent to read `.chronicle/config.json` for budget and limit values (e.g., `maxMemorySummaryTokens`, `maxMemoriesToPull`) rather than hardcoding numbers. This ensures config changes are reflected without re-init.
 
-### `/create-memory`
-
-The most critical skill — its prompt quality directly determines memory quality (FR-9.8).
+The bundled skill covers five workflows: list, recall, create from the current session, create from existing files or pasted material, and update.
 
 **Key prompt design elements:**
-- Instructs the agent to analyze the ENTIRE conversation
+- Instructs the agent to analyze the ENTIRE conversation when creating from session context
+- Instructs the agent to analyze the provided files or pasted text when creating from existing source material
 - Explicit guidance on writing descriptions as retrieval signals (FR-2.4): *"Think: if a future agent reads only this description, would it know whether this memory is relevant to its task?"*
 - Structured summary format with the 6 sections
-- Instruction to identify parent_ids from loaded memories
-- Instruction to use `--stdin` mode for the CLI call (pipe JSON to avoid shell limits)
-- Instruct the agent to read `maxMemorySummaryTokens` from `.chronicle/config.json` for the summary size limit
-
-### `/create-memory-from`
-
-For brownfield adoption — creating memories from existing project artifacts (FR-2.10).
-
-**Key prompt design elements:**
-- Instructs the agent to read the provided file paths or pasted text (not the conversation)
-- Same structured summary format and description quality standards as `/create-memory`
-- Same `--stdin` mode for CLI invocation
-- `parent_ids` are conditional on session state: if the current session has loaded Chronicle memories, they should be recorded as parents even though the source material is external files (FR-2.5)
-- Example usage: `/create-memory-from @docs/architecture.md @docs/api-design.md`
-
-### `/update-memory`
-
-- Loads existing memory first via `chronicle get`
-- Compares with current session, generates updated fields
-- Preserves still-accurate information
-
-### `/list-memories`
-
-- Runs `chronicle list --format table`
-- Presents results to user
-
-### `/recall`
-
-- Runs `chronicle get <id>`
-- Injects full memory content into conversation
+- Instruction to identify `parentIds` from loaded memories
+- Instruction to use `--stdin` mode for create and update CLI calls (pipe JSON to avoid shell limits)
+- Instructions to respect `.chronicle/config.json` for retrieval budgets, confirmation thresholds, and summary size limits
+- Direct command patterns for `chronicle list`, `chronicle get`, `chronicle create --stdin`, and `chronicle update --stdin`
 
 ---
 
@@ -456,12 +413,10 @@ After loading a memory, if it references specific files, implementations, or con
 spot-check that those artifacts still exist and match what the memory describes before relying
 on its claims. The codebase may have changed since the memory was created.
 
-### Available Commands
-- `chronicle list` — View all memory titles and descriptions
-- `chronicle get <id>` — Load a full memory
-- Use `/create-memory` to save session knowledge
-- Use `/update-memory <id>` to update an existing memory
-- `chronicle supersede <old_id> <new_id>` — Mark a memory as replaced
+### Memory Workflows
+Use the `chronicle-memory` skill for Chronicle memory operations such as browsing the catalog,
+recalling relevant memories, creating new memories, creating memories from existing source material,
+and updating stale memories.
 <!-- chronicle:end -->
 ```
 

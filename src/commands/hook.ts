@@ -53,7 +53,7 @@ export function executeSessionStartHookCommand(runtime: CommandRuntime): Session
     if (total === 0) {
       return {
         hookSpecificOutput: {
-          additionalContext: 'Chronicle is initialized but has no memories yet. Use /create-memory to save session knowledge.',
+          additionalContext: 'Chronicle is initialized but has no memories yet. Use /chronicle-memory to save session knowledge.',
           hookEventName: 'SessionStart',
         },
       };

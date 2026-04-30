@@ -9,32 +9,22 @@ import {
 import { renderInstructionBlock, renderJsonTemplate, renderSkillTemplate } from '../../src/templates/shared';
 import { renderClaudeMdInstructions } from '../../src/templates/instructions/claude-md';
 import { renderCopilotInstructions } from '../../src/templates/instructions/copilot-instructions';
-import { renderCreateMemoryFromSkill } from '../../src/templates/skills/create-memory-from';
-import { renderCreateMemorySkill } from '../../src/templates/skills/create-memory';
 import { getSkillTemplateFiles } from '../../src/templates/skills';
-import { renderListMemoriesSkill } from '../../src/templates/skills/list-memories';
-import { renderRecallSkill } from '../../src/templates/skills/recall';
-import { renderUpdateMemorySkill } from '../../src/templates/skills/update-memory';
+import { renderChronicleMemorySkill } from '../../src/templates/skills/chronicle-memory';
 
 function countOccurrences(content: string, fragment: string): number {
   return content.split(fragment).length - 1;
 }
 
 describe('template layer', () => {
-  it('renders all five skill files for both supported agents', () => {
+  it('renders one bundled Chronicle memory skill for both supported agents', () => {
     const claudeSkills = getSkillTemplateFiles('claude-code');
     const copilotSkills = getSkillTemplateFiles('copilot');
 
-    expect(claudeSkills).toHaveLength(5);
-    expect(copilotSkills).toHaveLength(5);
-    expect(claudeSkills.map((skill) => skill.directoryName)).toEqual([
-      'create-memory',
-      'create-memory-from',
-      'update-memory',
-      'list-memories',
-      'recall',
-    ]);
-    expect(copilotSkills[0]?.content.startsWith('---\nname: create-memory')).toBe(true);
+    expect(claudeSkills).toHaveLength(1);
+    expect(copilotSkills).toHaveLength(1);
+    expect(claudeSkills.map((skill) => skill.directoryName)).toEqual(['chronicle-memory']);
+    expect(copilotSkills[0]?.content.startsWith('---\nname: chronicle-memory')).toBe(true);
     expect(claudeSkills[0]?.content.startsWith('---')).toBe(false);
   });
 
@@ -57,44 +47,38 @@ describe('template layer', () => {
       expect(countOccurrences(skill.content, '---')).toBe(2);
       expect(skill.content.startsWith('---\nname: ')).toBe(true);
       expect(skill.content).toContain('\ndescription: ');
-      expect(skill.content).toContain('\n# /');
+      expect(skill.content).toContain('\n# /chronicle-memory');
     }
 
     for (const skill of claudeSkills) {
       expect(skill.content.startsWith('---')).toBe(false);
-      expect(skill.content.startsWith('# /')).toBe(true);
+      expect(skill.content.startsWith('# /chronicle-memory')).toBe(true);
     }
   });
 
-  it('renders the create-memory skill with config-aware and stdin guidance', () => {
-    const content = renderCreateMemorySkill('claude-code');
-    const copilotContent = renderCreateMemorySkill('copilot');
+  it('renders the bundled chronicle-memory skill with config-aware create guidance', () => {
+    const content = renderChronicleMemorySkill('claude-code');
+    const copilotContent = renderChronicleMemorySkill('copilot');
 
     expect(content).toContain('.chronicle/config.json');
     expect(content).toContain('chronicle create --stdin');
     expect(content).toContain('## Goals');
     expect(content).toContain('if a future agent reads only the description');
+    expect(content).toContain('chronicle list --format table');
+    expect(content).toContain('chronicle update <id> --stdin');
+    expect(content).toContain('maxRetrievalTokenBudget');
     expect(content).toContain('"agent":"claude-code"');
     expect(copilotContent).toContain('"agent":"copilot"');
   });
 
-  it('renders the create-memory-from skill around supplied source material', () => {
-    const content = renderCreateMemoryFromSkill('claude-code');
-    const copilotContent = renderCreateMemoryFromSkill('copilot');
+  it('renders the bundled skill with source-material guidance', () => {
+    const content = renderChronicleMemorySkill('claude-code');
+    const copilotContent = renderChronicleMemorySkill('copilot');
 
     expect(content).toContain('Analyze the supplied files or pasted text');
-    expect(content).toContain('/create-memory-from @docs/architecture.md');
+    expect(content).toContain('@docs/architecture.md');
     expect(content).toContain('"agent":"claude-code"');
     expect(copilotContent).toContain('"agent":"copilot"');
-  });
-
-  it('renders update, list, and recall skills with the expected commands', () => {
-    expect(renderUpdateMemorySkill('claude-code')).toContain('chronicle update <id> --stdin');
-    expect(renderUpdateMemorySkill('claude-code')).toContain('chronicle get <id>');
-    expect(renderListMemoriesSkill('claude-code')).toContain('chronicle list --format table');
-    expect(renderRecallSkill('claude-code')).toContain('maxMemoriesToPull');
-    expect(renderRecallSkill('claude-code')).toContain('maxRetrievalTokenBudget');
-    expect(renderRecallSkill('claude-code')).toContain('requireConfirmationAbove');
   });
 
   it('renders instruction snippets with markers and resolved config values', () => {
@@ -105,6 +89,7 @@ describe('template layer', () => {
     expect(claudeInstructions).toContain('<!-- chronicle:end -->');
     expect(claudeInstructions).toContain(`max ${DEFAULT_CONFIG.maxMemoriesToPull} memories`);
     expect(claudeInstructions).toContain(`max ${DEFAULT_CONFIG.maxRetrievalTokenBudget} total tokens`);
+    expect(claudeInstructions).toContain('Use the `chronicle-memory` skill');
     expect(copilotInstructions).toContain('Chronicle is separate from your built-in memory systems');
   });
 
